@@ -28,7 +28,7 @@ PWA = Progressive Web App. It means this app lives on a website but **installs a
 **On Android:** Open the link in Chrome → tap the 3-dot menu → tap "Add to Home Screen" or "Install App"
 
 
-1. Wait 1-2 minutes → your link will appear: `https://yourusername.github.io/daily-planner/`
+1. Wait 1-2 minutes → your link will appear:  https://romalitetools.github.io/daily-planner/`
 
 That link is the shareable URL. Send it to anyone — they can install it on their phone from that link.
 
