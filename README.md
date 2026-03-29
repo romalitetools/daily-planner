@@ -27,26 +27,11 @@ PWA = Progressive Web App. It means this app lives on a website but **installs a
 **On iPhone:** Open the link in Safari → tap the Share button → tap "Add to Home Screen"
 **On Android:** Open the link in Chrome → tap the 3-dot menu → tap "Add to Home Screen" or "Install App"
 
-## How to Upload to GitHub Pages (Step by Step)
-1. Go to github.com and sign in (create a free account if needed)
-2. Click the **+** button → **New repository**
-3. Name it: `daily-planner` (or any name you like)
-4. Set it to **Public**
-5. Click **Create repository**
-6. Click **uploading an existing file**
-7. Drag and drop ALL THREE files: `index.html`, `manifest.json`, `sw.js`
-8. Click **Commit changes**
-9. Go to **Settings** → **Pages** (left sidebar)
-10. Under "Source" select **Deploy from a branch** → choose **main** → folder **/ (root)**
-11. Click **Save**
-12. Wait 1-2 minutes → your link will appear: `https://yourusername.github.io/daily-planner/`
+
+1. Wait 1-2 minutes → your link will appear: `https://yourusername.github.io/daily-planner/`
 
 That link is the shareable URL. Send it to anyone — they can install it on their phone from that link.
 
-## How to Sell It
-- **Etsy / Gumroad:** Sell the link + a PDF guide on how to install it. Price suggestion: $7–$15.
-- **GitHub Pages is free** — no hosting costs ever.
-- **Each buyer gets their own copy** once installed — data stays on their device, private.
 
 ## Files in This Package
 | File | What it does |
