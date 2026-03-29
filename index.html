@@ -1,0 +1,2732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<!--
+  ADD TO HOME SCREEN:
+  iPhone/iPad: Tap Share then "Add to Home Screen"
+  Android: Tap browser menu then "Add to Home Screen"
+  Works best when saved to your device!
+-->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#7C3AED">
+<meta name="description" content="A personalized daily planner with Text-to-Speech, activity tracking, joy log, and more. By Romalite Life.">
+<title>My Daily Planner</title>
+<style>
+/* ── VARIABLES ── */
+:root {
+  --accent:   #7C3AED;
+  --accent-l: #EDE9FE;
+  --accent-d: #5B21B6;
+  --green:    #059669;
+  --green-l:  #D1FAE5;
+  --amber:    #D97706;
+  --amber-l:  #FEF3C7;
+  --orange:   #EA580C;
+  --orange-l: #FFF4ED;
+  --blue:     #1D4ED8;
+  --blue-l:   #EFF6FF;
+  --evening-bg: #1E1B4B;
+  --evening-card: rgba(255,255,255,0.07);
+  --evening-border: rgba(255,255,255,0.12);
+  --evening-text: #E0E7FF;
+  --text:  #111827;
+  --muted: #6B7280;
+  --border:#E5E7EB;
+  --bg:    #F9FAFB;
+  --white: #FFFFFF;
+  --shadow: 0 4px 18px rgba(0,0,0,0.09);
+  --r: 20px;
+  --nav-h: 74px;
+}
+
+/* ── RESET ── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+  background:var(--bg);color:var(--text);font-size:20px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
+  padding-top:var(--nav-h);
+  padding-bottom:160px;
+}
+body.text-large{font-size:22px;}
+body.text-xl{font-size:24px;}
+
+/* ── GREETING HEADER (scrolls away) ── */
+.g-header{
+  background:linear-gradient(135deg,#7C3AED 0%,#2563EB 60%,#0EA5E9 100%);
+  padding:28px 20px 22px;text-align:center;color:#fff;
+}
+.g-hello{font-size:34px;font-weight:900;text-shadow:0 2px 8px rgba(0,0,0,.2);}
+.g-date{font-size:20px;font-weight:700;opacity:.95;margin-top:4px;}
+.g-count{font-size:17px;opacity:.88;margin-top:3px;}
+.g-btns{margin-top:16px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+.g-read-btn{
+  background:rgba(255,255,255,.18);border:2px solid rgba(255,255,255,.45);
+  color:#fff;padding:13px 26px;border-radius:50px;font-size:20px;font-weight:800;
+  cursor:pointer;display:inline-flex;align-items:center;gap:10px;min-height:60px;
+  -webkit-tap-highlight-color:transparent;
+}
+.g-read-btn:active{opacity:.75;transform:scale(.97);}
+.g-stop-btn{
+  display:none;background:#EF4444;border:none;color:#fff;
+  padding:12px 24px;border-radius:50px;font-size:18px;font-weight:800;
+  cursor:pointer;min-height:56px;align-items:center;gap:8px;
+  -webkit-tap-highlight-color:transparent;
+}
+.g-stop-btn.vis{display:inline-flex;}
+
+/* ── MODE TOGGLE BAR ── */
+.mode-bar{
+  background:#fff;padding:12px 20px;display:flex;align-items:center;
+  justify-content:center;gap:14px;border-bottom:2px solid var(--border);
+}
+.mode-lbl{font-size:17px;font-weight:800;color:var(--muted);}
+.mode-lbl.on{color:var(--accent);}
+.tog-wrap{position:relative;display:inline-block;width:68px;height:34px;cursor:pointer;}
+.tog-wrap input{opacity:0;width:0;height:0;position:absolute;}
+.tog-track{
+  position:absolute;inset:0;background:#CBD5E1;border-radius:34px;
+  transition:background .3s;
+}
+.tog-wrap input:checked+.tog-track{background:var(--accent);}
+.tog-thumb{
+  position:absolute;height:26px;width:26px;left:4px;bottom:4px;
+  background:#fff;border-radius:50%;transition:transform .3s;
+  box-shadow:0 2px 5px rgba(0,0,0,.2);
+}
+.tog-wrap input:checked~.tog-thumb{transform:translateX(34px);}
+.mode-desc{font-size:13px;color:var(--muted);font-weight:600;}
+
+/* ── FIXED NAV ── */
+.sticky-nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;background:#fff;
+  display:flex;border-bottom:3px solid var(--border);
+  box-shadow:0 4px 14px rgba(0,0,0,.10);
+  height:var(--nav-h);
+}
+.snav-btn{
+  flex:1;padding:10px 4px;border:none;background:none;
+  font-size:11px;font-weight:800;color:var(--muted);
+  cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;
+  min-height:50px;transition:all .2s;border-bottom:4px solid transparent;
+  -webkit-tap-highlight-color:transparent;touch-action:manipulation;
+}
+.snav-btn .sn-ico{font-size:22px;}
+.snav-btn:active{opacity:.7;}
+.snav-btn.active{color:var(--accent);border-bottom-color:var(--accent);background:var(--accent-l);}
+
+/* ── SECTION SCROLL OFFSET ── */
+.day-section{scroll-margin-top:80px;}
+
+/* ── SECTION HEADERS ── */
+.sec-hdr{
+  padding:20px 20px 16px;display:flex;
+  align-items:center;justify-content:space-between;gap:12px;
+}
+.sec-hdr-text{font-size:30px;font-weight:900;display:flex;align-items:center;gap:10px;}
+.sec-hdr-read{
+  background:rgba(255,255,255,.22);border:2px solid rgba(255,255,255,.4);
+  color:#fff;padding:10px 14px;border-radius:50px;font-size:15px;font-weight:800;
+  cursor:pointer;display:flex;align-items:center;gap:7px;min-height:50px;
+  white-space:nowrap;-webkit-tap-highlight-color:transparent;
+}
+.sec-hdr-read:active{opacity:.75;}
+.sec-morning{background:#F59E0B;color:#fff;}
+.sec-afternoon{background:#EA580C;color:#fff;}
+.sec-evening{background:#312E81;color:var(--evening-text);}
+.sec-evening .sec-hdr-read{border-color:rgba(165,180,252,.4);background:rgba(165,180,252,.18);color:#A5B4FC;}
+
+/* ── SECTION CONTENT WRAPPERS ── */
+.sec-content{padding:16px;}
+.morning-bg  {background:#FFFBEB;}
+.afternoon-bg{background:#FFF4ED;}
+.evening-bg  {background:var(--evening-bg);}
+
+/* ── CARDS ── */
+.card{background:#fff;border-radius:var(--r);padding:20px 18px;margin-bottom:14px;box-shadow:var(--shadow);}
+.card-dark{background:var(--evening-card);border:1.5px solid var(--evening-border);border-radius:var(--r);padding:20px 18px;margin-bottom:14px;}
+.card-title{font-size:22px;font-weight:800;margin-bottom:14px;display:flex;align-items:center;gap:10px;}
+.card-dark .card-title{color:var(--evening-text);}
+
+/* ── CHECK ITEMS ── */
+.chk-item{
+  display:flex;align-items:center;gap:12px;padding:14px 12px;
+  margin-bottom:8px;background:var(--bg);border-radius:16px;
+  border:3px solid transparent;transition:all .25s;min-height:72px;
+  user-select:none;-webkit-tap-highlight-color:transparent;
+}
+.chk-item.done{background:var(--green-l);border-color:var(--green);}
+.chk-item.done .chk-txt{text-decoration:line-through;color:var(--green);}
+.chk-ico{font-size:28px;flex-shrink:0;}
+.chk-info{flex:1;}
+.chk-txt{font-size:20px;font-weight:700;}
+.chk-sub{font-size:14px;color:var(--muted);font-weight:600;}
+.chk-circle{
+  width:44px;height:44px;border-radius:50%;border:3px solid #D1D5DB;
+  background:#fff;display:flex;align-items:center;justify-content:center;
+  font-size:22px;flex-shrink:0;transition:all .25s;cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+}
+.chk-item.done .chk-circle{background:var(--green);border-color:var(--green);color:#fff;}
+
+/* ── SPEAKER BUTTONS ── */
+.spk{
+  background:var(--accent-l);border:none;color:var(--accent);
+  width:50px;height:50px;border-radius:50%;font-size:22px;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;-webkit-tap-highlight-color:transparent;transition:all .15s;
+}
+.spk:active{transform:scale(.88);background:var(--accent);color:#fff;}
+.spk.speaking{background:var(--accent);color:#fff;animation:spkPulse 1s infinite;}
+.spk-dark{background:rgba(165,180,252,.18);color:#A5B4FC;}
+@keyframes spkPulse{0%,100%{box-shadow:0 0 0 0 rgba(124,58,237,.4);}50%{box-shadow:0 0 0 9px rgba(124,58,237,0);}}
+
+/* ── MED ITEMS ── */
+.med-item{
+  display:flex;align-items:center;gap:12px;padding:16px 12px;
+  margin-bottom:10px;background:var(--bg);border-radius:16px;
+  border:3px solid transparent;min-height:82px;transition:all .25s;
+  user-select:none;-webkit-tap-highlight-color:transparent;
+}
+.med-item.taken{background:var(--green-l);border-color:var(--green);}
+.med-ico{font-size:32px;flex-shrink:0;}
+.med-info{flex:1;}
+.med-name{font-size:22px;font-weight:800;}
+.med-time{font-size:14px;color:var(--muted);font-weight:600;margin-top:2px;}
+.med-item.taken .med-name{text-decoration:line-through;color:var(--green);}
+.med-chk{
+  width:48px;height:48px;border-radius:50%;border:3px solid #D1D5DB;
+  background:#fff;display:flex;align-items:center;justify-content:center;
+  font-size:22px;flex-shrink:0;transition:all .25s;cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+}
+.med-item.taken .med-chk{background:var(--green);border-color:var(--green);color:#fff;}
+
+/* ── WATER TRACKER ── */
+.water-center{text-align:center;}
+.water-num{font-size:64px;font-weight:900;color:var(--blue);line-height:1;}
+.water-lbl{font-size:17px;color:var(--muted);font-weight:600;}
+.water-glasses{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:14px 0;}
+.glass{
+  width:54px;height:54px;border-radius:50%;border:3px solid #BFDBFE;
+  background:#fff;display:flex;align-items:center;justify-content:center;
+  font-size:24px;cursor:pointer;transition:all .25s;
+  -webkit-tap-highlight-color:transparent;
+}
+.glass.full{background:#DBEAFE;border-color:var(--blue);}
+.water-msg{font-size:18px;font-weight:700;color:var(--muted);margin-bottom:14px;}
+.water-msg.great{color:var(--green);}
+.water-btns{display:flex;gap:10px;}
+.water-add{
+  flex:1;min-height:72px;border:none;border-radius:18px;
+  background:linear-gradient(135deg,#1D4ED8,#7C3AED);color:#fff;
+  font-size:20px;font-weight:800;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  -webkit-tap-highlight-color:transparent;box-shadow:0 4px 14px rgba(29,78,216,.3);
+}
+.water-add:active{opacity:.88;transform:scale(.97);}
+.water-undo{
+  min-height:72px;min-width:72px;border:3px solid var(--border);background:#fff;
+  border-radius:18px;font-size:20px;font-weight:700;color:var(--muted);
+  cursor:pointer;-webkit-tap-highlight-color:transparent;
+}
+
+/* ── ACTIVITY ITEMS ── */
+.act-item{
+  background:#fff;border-radius:18px;padding:16px 14px;margin-bottom:10px;
+  border:2px solid var(--border);display:flex;align-items:flex-start;
+  gap:12px;min-height:82px;transition:all .25s;
+}
+.act-item.done{border-color:var(--green);background:var(--green-l);}
+.act-item.done .act-lbl{text-decoration:line-through;color:var(--green);}
+.act-dark{background:var(--evening-card);border-color:var(--evening-border);}
+.act-dark.done{background:rgba(5,150,105,.15);border-color:var(--green);}
+.act-emo{font-size:36px;flex-shrink:0;margin-top:3px;}
+.act-info{flex:1;min-width:0;}
+.act-lbl{font-size:20px;font-weight:700;color:var(--text);}
+.act-dark .act-lbl{color:var(--evening-text);}
+.act-dark.done .act-lbl{color:#6EE7B7;}
+.act-time{
+  font-size:15px;font-weight:800;color:var(--accent);margin-top:4px;
+  display:inline-block;padding:3px 10px;background:var(--accent-l);
+  border-radius:8px;border:2px dashed var(--accent);cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+}
+.act-time:active{background:var(--accent);color:#fff;}
+.act-meta{font-size:13px;color:var(--muted);font-weight:600;margin-top:3px;}
+.act-dark .act-meta{color:rgba(224,231,255,.6);}
+.act-actions{display:flex;flex-direction:column;gap:6px;flex-shrink:0;}
+.act-done-btn{
+  width:50px;height:50px;border-radius:50%;border:3px solid #D1D5DB;
+  background:#fff;font-size:22px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  -webkit-tap-highlight-color:transparent;transition:all .25s;
+}
+.act-item.done .act-done-btn{background:var(--green);border-color:var(--green);color:#fff;}
+.act-del{
+  width:44px;height:44px;border-radius:50%;border:2px solid var(--border);
+  background:#fff;font-size:16px;color:var(--muted);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  -webkit-tap-highlight-color:transparent;
+}
+.act-dark .act-done-btn,.act-dark .act-del{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2);color:var(--evening-text);}
+
+/* ── NO ACTIVITIES PLACEHOLDER ── */
+.no-acts{text-align:center;color:var(--muted);font-size:17px;padding:20px 0;font-weight:600;}
+.no-acts-dark{color:rgba(224,231,255,.4);}
+
+/* ── ADD ACTIVITY BUTTON ── */
+.add-act-btn{
+  width:100%;min-height:72px;border:3px dashed currentColor;border-radius:18px;
+  font-size:19px;font-weight:800;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:12px;
+  transition:all .2s;-webkit-tap-highlight-color:transparent;
+}
+.add-act-btn:active{opacity:.75;transform:scale(.97);}
+.add-morning{color:var(--amber);background:rgba(217,119,6,.07);}
+.add-afternoon{color:var(--orange);background:rgba(234,88,12,.07);}
+.add-evening{color:#818CF8;background:rgba(129,140,248,.12);border-color:#818CF8;}
+
+/* ── PROGRESS BAR ── */
+.prog-wrap{background:#E5E7EB;border-radius:50px;height:20px;overflow:hidden;margin:8px 0;}
+.prog-fill{height:100%;border-radius:50px;background:linear-gradient(90deg,var(--green),#10B981);transition:width .5s;}
+
+/* ── MODALS ── */
+.modal-bg{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);
+  z-index:500;-webkit-backdrop-filter:blur(5px);backdrop-filter:blur(5px);
+  overflow-y:auto;padding:16px 0;
+}
+.modal-bg.show{display:flex;align-items:flex-start;justify-content:center;}
+.modal-box{
+  background:#fff;border-radius:28px;width:min(540px,96vw);
+  margin:auto;animation:slideUp .3s ease;overflow:hidden;
+}
+@keyframes slideUp{from{transform:translateY(60px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+.modal-hdr{
+  padding:18px 20px 14px;border-bottom:2px solid #F3F4F6;
+  display:flex;align-items:center;gap:12px;
+  position:sticky;top:0;background:#fff;z-index:10;
+}
+.modal-title{font-size:22px;font-weight:900;flex:1;}
+.modal-back,.modal-close{
+  width:44px;height:44px;border-radius:50%;border:none;
+  background:#F3F4F6;font-size:20px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  -webkit-tap-highlight-color:transparent;flex-shrink:0;
+}
+.modal-body{padding:16px 20px 28px;max-height:72vh;overflow-y:auto;}
+
+/* ── CATEGORY GRID ── */
+.cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.cat-btn{
+  padding:16px 12px;border-radius:16px;border:3px solid transparent;
+  cursor:pointer;text-align:left;transition:all .2s;
+  display:flex;align-items:center;gap:10px;min-height:72px;
+  -webkit-tap-highlight-color:transparent;
+}
+.cat-btn:active{transform:scale(.97);}
+.cat-ico{font-size:28px;flex-shrink:0;}
+.cat-lbl{font-size:16px;font-weight:700;line-height:1.3;}
+
+/* ── ACTIVITY OPTIONS ── */
+.act-opt-btn{
+  width:100%;padding:16px 14px;background:var(--bg);border:2px solid var(--border);
+  border-radius:14px;cursor:pointer;text-align:left;
+  display:flex;align-items:center;gap:12px;min-height:64px;
+  font-size:18px;font-weight:700;transition:all .2s;margin-bottom:8px;
+  -webkit-tap-highlight-color:transparent;
+}
+.act-opt-btn:active{background:var(--accent-l);border-color:var(--accent);}
+
+/* ── DETAIL FORM ── */
+.det-lbl{
+  font-size:14px;font-weight:800;color:var(--muted);text-transform:uppercase;
+  letter-spacing:1.2px;display:block;margin-bottom:8px;
+}
+.det-input{
+  width:100%;border:3px solid var(--border);border-radius:14px;padding:13px;
+  font-size:18px;font-family:inherit;outline:none;color:var(--text);background:#fff;
+  margin-bottom:16px;
+}
+.det-input:focus{border-color:var(--accent);}
+input[type="time"].det-input{font-size:22px;font-weight:700;color:var(--accent);}
+.det-textarea{min-height:80px;resize:none;}
+.transp-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.transp-btn{
+  padding:10px 16px;border-radius:50px;border:2px solid var(--border);background:#fff;
+  font-size:16px;font-weight:700;cursor:pointer;min-height:46px;
+  -webkit-tap-highlight-color:transparent;transition:all .2s;
+}
+.transp-btn.sel{background:var(--accent);color:#fff;border-color:var(--accent);}
+.exc-row{display:flex;gap:14px;justify-content:center;margin-bottom:16px;}
+.exc-btn{
+  font-size:44px;padding:8px;background:none;border:4px solid transparent;
+  border-radius:16px;cursor:pointer;min-width:72px;min-height:72px;
+  display:flex;align-items:center;justify-content:center;
+  -webkit-tap-highlight-color:transparent;transition:all .2s;
+}
+.exc-btn.sel{border-color:var(--accent);background:var(--accent-l);}
+.sec-choice-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:4px;}
+.sec-choice-btn{
+  padding:14px 8px;border-radius:16px;border:none;font-size:15px;font-weight:800;
+  cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;
+  min-height:82px;-webkit-tap-highlight-color:transparent;transition:all .2s;color:#fff;
+}
+.sec-choice-btn:active{transform:scale(.97);}
+.sc-morning  {background:linear-gradient(135deg,#F59E0B,#D97706);}
+.sc-afternoon{background:linear-gradient(135deg,#EA580C,#C2410C);}
+.sc-evening  {background:linear-gradient(135deg,#4338CA,#7C3AED);}
+
+/* ── TIME EDIT MODAL ── */
+.time-edit-wrap{padding:20px;}
+.time-edit-wrap input[type="time"]{
+  width:100%;border:3px solid var(--accent);border-radius:14px;padding:14px;
+  font-size:28px;font-weight:700;color:var(--accent);text-align:center;
+  outline:none;margin-bottom:16px;
+}
+.time-save-btn{
+  width:100%;min-height:66px;border:none;border-radius:16px;
+  background:linear-gradient(135deg,var(--accent),var(--blue));
+  color:#fff;font-size:20px;font-weight:800;cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+}
+.time-save-btn:active{opacity:.9;transform:scale(.97);}
+
+/* ── AFFIRMATIONS ── */
+.affirm-box{
+  background:linear-gradient(135deg,#4338CA,#7C3AED);border-radius:var(--r);
+  padding:30px 20px;text-align:center;margin-bottom:12px;color:#fff;
+  min-height:160px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:10px;
+}
+.affirm-txt{font-size:30px;font-weight:900;line-height:1.3;}
+.affirm-sub{font-size:18px;opacity:.9;}
+.affirm-dots{display:flex;gap:8px;margin-top:4px;}
+.adot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.3);transition:all .3s;}
+.adot.on{background:#fff;transform:scale(1.4);}
+.affirm-btns{display:flex;gap:10px;margin-bottom:14px;}
+.affirm-next{
+  flex:1;min-height:64px;border:2px solid rgba(255,255,255,.25);
+  background:rgba(255,255,255,.10);color:#fff;border-radius:16px;
+  font-size:18px;font-weight:800;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  -webkit-tap-highlight-color:transparent;
+}
+.affirm-next:active{background:rgba(255,255,255,.2);}
+
+/* ── JOY LOG ── */
+.joy-emojis{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;}
+.joy-emo-btn{
+  font-size:32px;padding:6px;background:rgba(255,255,255,.08);
+  border:2px solid rgba(255,255,255,.15);border-radius:12px;cursor:pointer;
+  min-width:52px;min-height:52px;display:flex;align-items:center;justify-content:center;
+  -webkit-tap-highlight-color:transparent;transition:transform .15s;
+}
+.joy-emo-btn:active{transform:scale(1.35);}
+.joy-ta{
+  width:100%;min-height:90px;border-radius:14px;border:2px solid rgba(255,255,255,.25);
+  padding:14px;font-size:18px;font-family:inherit;resize:none;outline:none;
+  background:rgba(255,255,255,.08);color:var(--evening-text);margin-bottom:10px;
+}
+.joy-ta::placeholder{color:rgba(224,231,255,.4);}
+.joy-ta:focus{border-color:rgba(255,255,255,.55);}
+.joy-save-row{display:flex;gap:10px;margin-bottom:14px;}
+.joy-save-btn{
+  flex:1;min-height:70px;border:none;border-radius:18px;
+  background:linear-gradient(135deg,#F59E0B,#EA580C);color:#fff;
+  font-size:19px;font-weight:800;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  -webkit-tap-highlight-color:transparent;
+}
+.joy-save-btn:active{opacity:.88;transform:scale(.97);}
+.joy-entry{
+  padding:14px;background:rgba(255,255,255,.07);border-radius:14px;
+  margin-bottom:10px;border-left:4px solid #F59E0B;
+}
+.joy-entry-date{font-size:13px;color:rgba(224,231,255,.5);font-weight:700;}
+.joy-entry-txt{font-size:18px;font-weight:600;color:var(--evening-text);margin-top:3px;}
+
+/* ── WEEKLY VIEW ── */
+#weekView{display:none;background:var(--bg);min-height:60vh;}
+.week-top{padding:16px;display:flex;align-items:center;gap:12px;}
+.week-back{
+  padding:12px 18px;background:var(--accent);color:#fff;border:none;
+  border-radius:14px;font-size:16px;font-weight:800;cursor:pointer;min-height:52px;
+  -webkit-tap-highlight-color:transparent;
+}
+.week-title{font-size:26px;font-weight:900;flex:1;}
+.wday-card{
+  background:#fff;border-radius:18px;margin:0 16px 12px;
+  box-shadow:var(--shadow);border:3px solid transparent;overflow:hidden;
+}
+.wday-card.today{border-color:var(--accent);}
+.wday-hdr{
+  padding:14px 16px;display:flex;align-items:center;gap:12px;
+  cursor:pointer;-webkit-tap-highlight-color:transparent;
+}
+.wday-name{font-size:20px;font-weight:800;}
+.wday-date{font-size:14px;color:var(--muted);font-weight:600;}
+.today-tag{
+  background:var(--accent);color:#fff;padding:4px 10px;
+  border-radius:50px;font-size:12px;font-weight:800;
+}
+.wday-preview{font-size:15px;color:var(--muted);font-weight:600;margin-left:auto;}
+.wday-acts{padding:0 16px 14px;display:none;}
+.wday-acts.open{display:block;}
+.wday-act-row{
+  font-size:17px;padding:6px 0;border-bottom:1px solid #F3F4F6;
+  display:flex;align-items:center;gap:8px;
+}
+.wday-act-row:last-child{border:none;}
+
+/* ── CELEBRATION ── */
+.confetti-wrap{position:fixed;inset:0;pointer-events:none;z-index:9999;overflow:hidden;}
+.conf{position:absolute;width:11px;height:11px;opacity:0;border-radius:2px;animation:confFall linear forwards;}
+@keyframes confFall{0%{opacity:1;transform:translateY(-10px) rotate(0deg);}100%{opacity:0;transform:translateY(105vh) rotate(720deg);}}
+.cel-overlay{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);
+  z-index:1000;-webkit-backdrop-filter:blur(5px);backdrop-filter:blur(5px);
+  align-items:center;justify-content:center;
+}
+.cel-overlay.show{display:flex;}
+.cel-box{
+  background:#fff;border-radius:28px;padding:36px 28px 28px;text-align:center;
+  width:min(340px,92vw);animation:popIn .35s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes popIn{from{transform:scale(.4);opacity:0;}to{transform:scale(1);opacity:1;}}
+.cel-emo{font-size:72px;line-height:1;}
+.cel-title{font-size:28px;font-weight:900;margin:12px 0 6px;color:var(--accent);}
+.cel-msg{font-size:18px;color:var(--text);margin-bottom:22px;line-height:1.5;}
+.cel-close{
+  width:100%;min-height:66px;background:linear-gradient(135deg,var(--accent),var(--blue));
+  color:#fff;border:none;border-radius:50px;font-size:20px;font-weight:900;cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+}
+.cel-close:active{opacity:.9;transform:scale(.97);}
+
+/* ── TOAST (hidden — using speech + celebration instead) ── */
+.toast{display:none!important;}
+
+/* ── MISC ── */
+.divider{height:2px;background:rgba(255,255,255,.08);margin:14px 0;}
+.sec-sublbl{font-size:13px;font-weight:800;color:rgba(224,231,255,.5);text-transform:uppercase;letter-spacing:1.2px;margin:14px 0 10px;}
+.prog-lbl{font-size:14px;color:var(--muted);font-weight:700;text-align:center;margin-top:5px;}
+
+/* ── WEEKLY VIEW extra ── */
+#weekView{padding-bottom:160px;}
+
+/* ── SETTINGS VIEW ── */
+#settingsView{display:none;background:var(--bg);min-height:100vh;padding-bottom:160px;}
+.settings-content{padding:0 16px 32px;max-width:680px;margin:0 auto;}
+.settings-name-val{color:var(--accent);font-size:22px;font-weight:900;}
+.settings-option-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:4px;}
+.settings-opt-btn{
+  padding:12px 18px;border-radius:50px;border:2px solid var(--border);background:#fff;
+  font-size:16px;font-weight:700;cursor:pointer;min-height:50px;
+  -webkit-tap-highlight-color:transparent;transition:all .2s;touch-action:manipulation;
+}
+.settings-opt-btn.sel{background:var(--accent);color:#fff;border-color:var(--accent);}
+.settings-theme-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:4px;}
+.settings-theme-btn{
+  flex:1;min-height:60px;min-width:56px;border-radius:14px;border:3px solid transparent;
+  cursor:pointer;font-size:13px;font-weight:800;color:#fff;
+  display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px;
+  -webkit-tap-highlight-color:transparent;transition:all .2s;touch-action:manipulation;
+}
+.settings-theme-btn.sel{outline:4px solid var(--text);outline-offset:3px;}
+.settings-save-btn{
+  width:100%;min-height:60px;border:none;border-radius:16px;
+  background:var(--accent);color:#fff;font-size:18px;font-weight:800;
+  cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;margin-top:8px;
+}
+.settings-save-btn:active{opacity:.88;}
+.settings-danger-btn{
+  width:100%;min-height:60px;border:none;border-radius:16px;
+  background:#EF4444;color:#fff;font-size:18px;font-weight:800;
+  cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;
+}
+.settings-danger-btn:active{opacity:.88;}
+.settings-info-box{
+  background:#F3F4F6;border-radius:14px;padding:16px;margin-bottom:16px;
+  font-size:15px;line-height:1.7;color:var(--text);
+}
+.settings-info-box strong{color:var(--accent);}
+.settings-row-label{font-size:16px;color:var(--muted);font-weight:600;margin-bottom:10px;}
+
+/* ── WELCOME SCREEN ── */
+.welcome-screen{
+  display:none;position:fixed;inset:0;
+  background:linear-gradient(135deg,#7C3AED,#2563EB 60%,#0EA5E9 100%);
+  z-index:9000;flex-direction:column;align-items:center;justify-content:center;
+  padding:32px 24px;text-align:center;overflow-y:auto;
+}
+.welcome-screen.show{display:flex;}
+.welcome-icon{font-size:80px;line-height:1;margin-bottom:16px;}
+.welcome-title{font-size:38px;font-weight:900;color:#fff;margin-bottom:8px;}
+.welcome-sub{font-size:20px;color:rgba(255,255,255,.9);margin-bottom:32px;line-height:1.5;max-width:340px;}
+.welcome-input{
+  width:100%;max-width:340px;border:none;border-radius:16px;
+  padding:18px 20px;font-size:24px;font-weight:700;text-align:center;
+  outline:none;margin-bottom:20px;color:#1F2937;
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+}
+.welcome-btn{
+  width:100%;max-width:340px;min-height:72px;border:none;border-radius:20px;
+  background:#fff;color:#7C3AED;font-size:22px;font-weight:900;cursor:pointer;
+  -webkit-tap-highlight-color:transparent;touch-action:manipulation;
+}
+.welcome-btn:active{opacity:.88;transform:scale(.97);}
+
+/* ── STATUS CARD ── */
+.status-card{background:#fff;border-radius:var(--r);padding:16px 18px;margin-bottom:14px;box-shadow:var(--shadow);}
+.status-title{font-size:18px;font-weight:800;color:var(--muted);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.status-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.status-item{background:var(--bg);border-radius:14px;padding:12px 10px;text-align:center;}
+.status-num{font-size:28px;font-weight:900;color:var(--accent);line-height:1;}
+.status-lbl{font-size:12px;color:var(--muted);font-weight:700;margin-top:2px;}
+
+/* ── ROUTINE EDITOR ── */
+.re-item{
+  display:flex;align-items:center;gap:10px;padding:12px 10px;
+  background:var(--bg);border-radius:14px;margin-bottom:8px;
+  border:2px solid var(--border);
+}
+.re-emoji-btn{
+  font-size:28px;width:48px;height:48px;border-radius:12px;
+  border:2px solid var(--border);background:#fff;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;-webkit-tap-highlight-color:transparent;
+}
+.re-text-input{
+  flex:1;border:2px solid var(--border);border-radius:10px;padding:10px 12px;
+  font-size:17px;font-family:inherit;outline:none;color:var(--text);background:#fff;
+}
+.re-text-input:focus{border-color:var(--accent);}
+.re-del-btn{
+  width:44px;height:44px;border-radius:50%;border:2px solid #FCA5A5;
+  background:#FEF2F2;color:#EF4444;font-size:18px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  -webkit-tap-highlight-color:transparent;
+}
+.re-add-btn{
+  width:100%;min-height:60px;border:3px dashed var(--accent);border-radius:14px;
+  background:var(--accent-l);color:var(--accent);font-size:18px;font-weight:800;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;
+  -webkit-tap-highlight-color:transparent;margin-bottom:14px;
+}
+.re-save-btn{
+  width:100%;min-height:64px;border:none;border-radius:16px;
+  background:linear-gradient(135deg,var(--accent),var(--blue));
+  color:#fff;font-size:20px;font-weight:800;cursor:pointer;
+  -webkit-tap-highlight-color:transparent;touch-action:manipulation;
+}
+.re-save-btn:active{opacity:.88;}
+.re-reset-link{
+  display:block;text-align:center;margin-top:12px;
+  font-size:14px;color:var(--muted);font-weight:700;cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+}
+.emoji-picker-row{
+  display:flex;flex-wrap:wrap;gap:8px;padding:12px 0;
+}
+.ep-btn{
+  font-size:26px;width:46px;height:46px;border-radius:10px;
+  border:2px solid transparent;background:var(--bg);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  -webkit-tap-highlight-color:transparent;transition:all .15s;
+}
+.ep-btn:active,.ep-btn.sel{border-color:var(--accent);background:var(--accent-l);}
+
+/* ── FOOTER ── */
+.romalite-footer{
+  text-align:center;padding:16px 20px 20px;
+  font-size:13px;color:var(--muted);font-weight:600;
+  border-top:1px solid var(--border);margin-top:20px;
+}
+
+/* ── iPad ── */
+@media(min-width:768px){
+  .sec-content{max-width:680px;margin:0 auto;}
+  .cat-grid{grid-template-columns:1fr 1fr 1fr;}
+  body{font-size:21px;}
+  .g-hello{font-size:40px;}
+}
+@media(min-width:1024px){
+  .sec-content{max-width:760px;}
+}
+</style>
+</head>
+<body>
+
+<!-- Welcome Screen (First Run) -->
+<div class="welcome-screen" id="welcomeScreen">
+  <div class="welcome-icon">🌟</div>
+  <div class="welcome-title">Welcome!</div>
+  <div class="welcome-sub">This planner was made just for you. What is your name?</div>
+  <input id="welcomeNameInput" class="welcome-input" type="text" placeholder="Type your name..." autocomplete="off" maxlength="40">
+  <button class="welcome-btn" onclick="saveWelcomeName()">Let's Go!</button>
+</div>
+
+<!-- Confetti -->
+<div class="confetti-wrap" id="confettiWrap"></div>
+
+<!-- Celebration Modal -->
+<div class="cel-overlay" id="celOverlay">
+  <div class="cel-box">
+    <div class="cel-emo" id="celEmo">🌟</div>
+    <div class="cel-title" id="celTitle">Amazing!</div>
+    <div class="cel-msg" id="celMsg">You did it!</div>
+    <button class="cel-close" onclick="closeCel()">Yay! 🎉</button>
+  </div>
+</div>
+
+<!-- Activity Picker Modal -->
+<div class="modal-bg" id="pickerModal">
+  <div class="modal-box">
+    <div class="modal-hdr">
+      <button class="modal-back" id="pickerBack" onclick="pickerGoBack()">←</button>
+      <div class="modal-title" id="pickerTitle">Pick an Activity</div>
+      <button class="modal-close" onclick="closePicker()">✕</button>
+    </div>
+    <div class="modal-body" id="pickerBody"></div>
+  </div>
+</div>
+
+<!-- Time Edit Modal -->
+<div class="modal-bg" id="timeModal">
+  <div class="modal-box" style="max-width:360px;">
+    <div class="modal-hdr">
+      <div class="modal-title">Change Time ⏰</div>
+      <button class="modal-close" onclick="closeTimeModal()">✕</button>
+    </div>
+    <div class="time-edit-wrap">
+      <input type="time" id="timeEditInput">
+      <button class="time-save-btn" onclick="saveTimeEdit()">Save Time ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"><span id="toastIco">⭐</span><span id="toastMsg">Great job!</span></div>
+
+<!-- Routine Editor Modal -->
+<div class="modal-bg" id="routineEditorModal">
+  <div class="modal-box">
+    <div class="modal-hdr">
+      <div class="modal-title">✏️ Edit My Routine</div>
+      <button class="modal-close" onclick="closeRoutineEditor()">✕</button>
+    </div>
+    <div class="modal-body" id="routineEditorBody"></div>
+  </div>
+</div>
+
+<!-- ═══════════════ GREETING HEADER ═══════════════ -->
+<div class="g-header">
+  <div class="g-hello" id="gHello" onclick="showSettings()" style="cursor:pointer;" title="Tap to change name">Good Morning! ☀️</div>
+  <div style="font-size:13px;opacity:.7;margin-top:2px;font-weight:600;">Tap name to change · Settings ⚙️</div>
+  <div class="g-date" id="gDate">Loading…</div>
+  <div class="g-count" id="gCount">You have 0 things planned today</div>
+  <div class="g-btns">
+    <button class="g-read-btn" onclick="readMyDay()">🔊 Read My Day</button>
+    <button class="g-stop-btn" id="stopBtn" onclick="stopSpeak()">⏹ Stop</button>
+  </div>
+</div>
+
+<!-- ═══════════════ MODE TOGGLE ═══════════════ -->
+<div class="mode-bar">
+  <span class="mode-lbl on" id="modeLblL">🕐 Flexible</span>
+  <label class="tog-wrap" title="Switch time mode">
+    <input type="checkbox" id="modeChk" onchange="toggleMode()">
+    <span class="tog-track"></span>
+    <span class="tog-thumb"></span>
+  </label>
+  <span class="mode-lbl" id="modeLblR">Strict 📅</span>
+</div>
+
+<!-- ═══════════════ FIXED NAV ═══════════════ -->
+<nav class="sticky-nav">
+  <button class="snav-btn active" id="snav-morning" onclick="jumpTo('morning')">
+    <span class="sn-ico">🌅</span><span>Morning</span>
+  </button>
+  <button class="snav-btn" id="snav-afternoon" onclick="jumpTo('afternoon')">
+    <span class="sn-ico">☀️</span><span>Afternoon</span>
+  </button>
+  <button class="snav-btn" id="snav-evening" onclick="jumpTo('evening')">
+    <span class="sn-ico">🌙</span><span>Evening</span>
+  </button>
+  <button class="snav-btn" id="snav-week" onclick="showWeek()">
+    <span class="sn-ico">📅</span><span>Week</span>
+  </button>
+  <button class="snav-btn" id="snav-settings" onclick="showSettings()">
+    <span class="sn-ico">⚙️</span><span>Settings</span>
+  </button>
+</nav>
+
+<!-- ═══════════════ DAILY VIEW ═══════════════ -->
+<div id="dailyView">
+
+  <!-- ─── MORNING SECTION ─── -->
+  <section class="day-section morning-bg" id="section-morning">
+    <div class="sec-hdr sec-morning">
+      <div class="sec-hdr-text">🌅 MORNING</div>
+      <button class="sec-hdr-read" onclick="readSection('morning')">🔊 Read</button>
+    </div>
+    <div class="sec-content">
+
+      <!-- Today's Status -->
+      <div class="status-card" id="statusCard">
+        <div class="status-title">📊 Today's Progress</div>
+        <div class="status-grid">
+          <div class="status-item"><div class="status-num" id="st-routine">0/5</div><div class="status-lbl">Routine Done</div></div>
+          <div class="status-item"><div class="status-num" id="st-water">0/8</div><div class="status-lbl">Water Glasses</div></div>
+          <div class="status-item"><div class="status-num" id="st-acts">0</div><div class="status-lbl">Activities Today</div></div>
+        </div>
+      </div>
+
+      <!-- Morning Routine -->
+      <div class="card">
+        <div class="card-title" style="justify-content:space-between;">
+          <span>☀️ My Morning Routine</span>
+          <button onclick="openRoutineEditor()" style="background:var(--accent-l);border:none;color:var(--accent);border-radius:50px;padding:8px 16px;font-size:14px;font-weight:800;cursor:pointer;-webkit-tap-highlight-color:transparent;min-height:44px;">✏️ Edit</button>
+        </div>
+        <div id="morningRoutineList"></div>
+        <div class="prog-wrap"><div class="prog-fill" id="routineProg" style="width:0%"></div></div>
+        <div class="prog-lbl" id="routineLbl">0 of 5 done</div>
+      </div>
+
+      <!-- Water -->
+      <div class="card">
+        <div class="card-title">💧 Drink Water Today!</div>
+        <div class="water-center">
+          <div class="water-num" id="waterNum">0</div>
+          <div class="water-lbl">glasses of water</div>
+          <div class="water-glasses" id="waterGlasses"></div>
+          <div class="water-msg" id="waterMsg">Goal: 8 glasses today! 💪</div>
+          <div class="water-btns">
+            <button class="water-add" onclick="addWater()">💧 I Drank a Glass!</button>
+            <button class="water-undo" onclick="removeWater()">↩</button>
+            <button class="spk" onclick="speak('You have had '+loadWater()+' glasses of water so far today. Great job staying hydrated!')" style="border-radius:18px;width:auto;padding:0 14px;">🔊</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Morning Activities -->
+      <div class="card">
+        <div class="card-title">🌅 Morning Plans</div>
+        <div id="morningActList"></div>
+        <button class="add-act-btn add-morning" onclick="openPicker('morning')">➕ Add Morning Activity</button>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ─── AFTERNOON SECTION ─── -->
+  <section class="day-section afternoon-bg" id="section-afternoon">
+    <div class="sec-hdr sec-afternoon">
+      <div class="sec-hdr-text">☀️ AFTERNOON</div>
+      <button class="sec-hdr-read" onclick="readSection('afternoon')">🔊 Read</button>
+    </div>
+    <div class="sec-content">
+      <div class="card">
+        <div class="card-title">☀️ Afternoon Plans</div>
+        <div id="afternoonActList"></div>
+        <button class="add-act-btn add-afternoon" onclick="openPicker('afternoon')">➕ Add Afternoon Activity</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── EVENING SECTION ─── -->
+  <section class="day-section evening-bg" id="section-evening">
+    <div class="sec-hdr sec-evening">
+      <div class="sec-hdr-text">🌙 EVENING</div>
+      <button class="sec-hdr-read" onclick="readSection('evening')">🔊 Read</button>
+    </div>
+    <div class="sec-content" style="padding-bottom:80px;">
+
+      <!-- Evening Activities -->
+      <div class="card-dark">
+        <div class="card-title">🌙 Evening Plans</div>
+        <div id="eveningActList"></div>
+        <button class="add-act-btn add-evening" onclick="openPicker('evening')">➕ Add Evening Activity</button>
+      </div>
+
+      <!-- Affirmations -->
+      <div class="affirm-box">
+        <div class="affirm-txt" id="affTxt">I am loved ❤️</div>
+        <div class="affirm-sub" id="affSub">So many people love you!</div>
+        <div class="affirm-dots" id="affDots"></div>
+      </div>
+      <div class="affirm-btns">
+        <button class="affirm-next" onclick="nextAffirm()">✨ Next Affirmation</button>
+        <button class="spk spk-dark" style="width:66px;height:66px;border-radius:16px;" onclick="speakAffirm()">🔊</button>
+      </div>
+
+      <!-- Joy Log -->
+      <div class="card-dark">
+        <div class="card-title">😊 What Made Me Happy Today?</div>
+        <div class="joy-emojis" id="joyEmojiRow"></div>
+        <textarea class="joy-ta" id="joyTA" placeholder="Tell me something happy! 💛" rows="3"></textarea>
+        <div class="joy-save-row">
+          <button class="joy-save-btn" onclick="saveJoy()">💛 Save Happy Moment!</button>
+          <button class="spk spk-dark" style="width:70px;height:70px;border-radius:16px;" onclick="speakJoyInput()">🔊</button>
+        </div>
+        <div class="sec-sublbl">Recent Happy Moments 🌟</div>
+        <div id="joyList"></div>
+      </div>
+
+    </div>
+  </section>
+
+</div><!-- end dailyView -->
+
+<!-- ═══════════════ WEEKLY VIEW ═══════════════ -->
+<div id="weekView">
+  <div class="week-top">
+    <button class="week-back" onclick="hideWeek()">← Back to Today</button>
+    <div class="week-title">This Week 📅</div>
+    <button class="spk" onclick="readWeek()">🔊</button>
+  </div>
+  <div id="weekContainer" style="padding-bottom:30px;"></div>
+</div>
+
+
+<!-- ═══════════════ SETTINGS VIEW ═══════════════ -->
+<div id="settingsView">
+  <div class="week-top">
+    <button class="week-back" onclick="hideSettings()">← Back to Today</button>
+    <div class="week-title">Settings ⚙️</div>
+  </div>
+  <div class="settings-content">
+
+    <!-- My Name -->
+    <div class="card">
+      <div class="card-title">🙋 My Name</div>
+      <div class="settings-row-label">Your name: <span class="settings-name-val" id="settingsNameDisplay">—</span></div>
+      <input type="text" id="settingsNameInput" class="det-input" placeholder="Type your name..." autocomplete="off" maxlength="40">
+      <button class="settings-save-btn" onclick="saveChangedName()">Save Name ✓</button>
+    </div>
+
+    <!-- Color Theme -->
+    <div class="card">
+      <div class="card-title">🎨 Color Theme</div>
+      <div id="themeButtonsRow" class="settings-theme-row"></div>
+    </div>
+
+    <!-- Text Size -->
+    <div class="card">
+      <div class="card-title">🔤 Text Size</div>
+      <div id="textSizeRow" class="settings-option-row"></div>
+    </div>
+
+    <!-- Voice Speed -->
+    <div class="card">
+      <div class="card-title">🔊 Voice Speed</div>
+      <div id="voiceSpeedRow" class="settings-option-row"></div>
+    </div>
+
+    <!-- Time Mode -->
+    <div class="card">
+      <div class="card-title">⏰ Time Display Mode</div>
+      <div class="mode-bar" style="border:none;padding:0;justify-content:flex-start;gap:16px;margin-bottom:8px;">
+        <span class="mode-lbl" id="modeLbl2L">Flexible</span>
+        <label class="tog-wrap">
+          <input type="checkbox" id="modeChk2" onchange="toggleMode2()">
+          <span class="tog-track"></span>
+          <span class="tog-thumb"></span>
+        </label>
+        <span class="mode-lbl" id="modeLbl2R">Strict</span>
+      </div>
+      <div style="font-size:14px;color:var(--muted);font-weight:600;line-height:1.6;">
+        <strong>Flexible:</strong> Shows "This Morning", "This Afternoon"<br>
+        <strong>Strict:</strong> Shows exact times like "9:00 AM"
+      </div>
+    </div>
+
+    <!-- Data Info -->
+    <div class="card">
+      <div class="card-title">📱 Where Your Information Is Saved</div>
+      <div class="settings-info-box">
+        Everything in this planner — your activities, water tracker, joy moments, and routines — is saved directly <strong>on this device</strong> in something called Local Storage. Nothing is sent to the internet. Nothing is stored on a server.<br><br>
+        <strong>Best tip:</strong> Use this planner on the same device every day and add it to your Home Screen so it always opens the same way. If you clear your browser data or use a different device, your information will not be there.
+      </div>
+      <div style="font-size:14px;color:var(--muted);font-weight:600;margin-bottom:14px;">To remove everything and start fresh, tap the button below. This cannot be undone.</div>
+      <button class="settings-danger-btn" onclick="clearAllData()">🗑️ Clear All My Data</button>
+    </div>
+
+    <!-- About -->
+    <div class="card" style="text-align:center;">
+      <div class="card-title" style="justify-content:center;">About This Planner</div>
+      <div style="font-size:17px;font-weight:700;color:var(--text);margin-bottom:6px;">Version 1.0</div>
+      <div style="font-size:16px;color:var(--muted);font-weight:600;">Made with love by Romalite Life</div>
+    </div>
+
+  </div>
+  <div class="romalite-footer">Powered by Romalite Life · Version 1.0</div>
+</div>
+
+<!-- ═══════════════ JAVASCRIPT ═══════════════ -->
+<script>
+'use strict';
+// Open this file with ?reset at the end to start completely fresh
+// Example: 18-erica-daily-planner.html?reset
+if (location.search.includes('reset')) {
+  localStorage.clear();
+  location.replace(location.pathname);
+}
+
+// Routine items are now editable — see getRoutineItems() / DEFAULT_ROUTINE
+
+const AFFIRMATIONS = [
+  { txt:'I am loved',              sub:'So many people love you!' },
+  { txt:'I am capable',            sub:'You can do amazing things!' },
+  { txt:'I make people smile',     sub:'Your smile lights up every room!' },
+  { txt:'I belong everywhere',     sub:'You are part of this community!' },
+  { txt:'I am beautiful',          sub:'Inside and outside, always!' },
+  { txt:'I can do hard things',    sub:'You are stronger than you know!' },
+  { txt:'My family is proud of me',sub:'You make everyone so proud!' },
+  { txt:'Today is going to be great',sub:'Every day is a gift!' },
+  { txt:'I am amazing',            sub:'There is no one else like you!' },
+  { txt:'I make the world better', sub:'Just by being exactly who you are!' },
+  { txt:'I am brave',              sub:'You face every day with courage!' },
+  { txt:'I have gifts to share',   sub:'The world needs exactly what you bring!' },
+  { txt:'I deserve good things',   sub:'You deserve joy, love, and adventure!' },
+  { txt:'I am growing every day',  sub:'Every day you become more yourself!' },
+  { txt:'I am a good friend',      sub:'People love being around you!' },
+  { txt:'I am enough',             sub:'Exactly as you are, right now!' },
+  { txt:'I choose joy today',      sub:'Joy starts with you!' },
+  { txt:'I am proud of myself',    sub:'You work hard and it shows!' },
+  { txt:'I am one of a kind',      sub:'Nobody in the world is quite like you!' },
+  { txt:'This is my day',          sub:'Go make it wonderful!' },
+];
+
+const JOY_EMOJIS = ['😊','❤️','🌟','🎉','😂','🌈','🥰','🎵','🎨','🌸','🍕','🐶','☀️','🌺','💃','🏆','🎭','🌊'];
+
+/* ─────────────────────────────────────────────
+   COMPLETE ACTIVITY LIBRARY
+───────────────────────────────────────────── */
+const ACTIVITY_LIBRARY = [
+  { id:'appt', label:'Appointments & Therapy', emoji:'🏥', color:'#DC2626', bg:'#FEF2F2',
+    acts:[
+      { id:'ap_doc',    emoji:'👨‍⚕️', label:'Doctor Appointment' },
+      { id:'ap_dent',   emoji:'🦷',  label:'Dentist Appointment' },
+      { id:'ap_eye',    emoji:'👁️',  label:'Eye Doctor' },
+      { id:'ap_ther',   emoji:'💭',  label:'Therapy Session' },
+      { id:'ap_speech', emoji:'🗣️',  label:'Speech Therapy at Home' },
+      { id:'ap_ot',     emoji:'🤲',  label:'Occupational Therapy' },
+      { id:'ap_pt',     emoji:'🏃',  label:'Physical Therapy' },
+      { id:'ap_gc',     emoji:'🏫',  label:"Gigi's Playhouse Class" },
+      { id:'ap_ge',     emoji:'🎉',  label:"Gigi's Playhouse Event" },
+      { id:'ap_sc',     emoji:'📋',  label:'Support Coordinator Meeting' },
+      { id:'ap_hosp',   emoji:'🏥',  label:'Hospital Visit' },
+      { id:'ap_lab',    emoji:'🩸',  label:'Lab Work or Blood Test' },
+    ]
+  },
+  { id:'sitdown', label:'Sit Down Restaurants', emoji:'🍽️', color:'#B45309', bg:'#FFFBEB',
+    acts:[
+      { id:'r_lobster',  emoji:'🦞', label:'Red Lobster' },
+      { id:'r_chilis',   emoji:'🌶️', label:"Chili's" },
+      { id:'r_applebees',emoji:'🍎', label:"Applebee's" },
+      { id:'r_olive',    emoji:'🍝', label:'Olive Garden' },
+      { id:'r_texas',    emoji:'🤠', label:'Texas Roadhouse' },
+      { id:'r_native',   emoji:'🗽', label:'Native New Yorker' },
+      { id:'r_manuels',  emoji:'🌮', label:"Manuel's Mexican Restaurant" },
+      { id:'r_outback',  emoji:'🥩', label:'Outback Steakhouse' },
+      { id:'r_ihop',     emoji:'🥞', label:'IHOP' },
+      { id:'r_dennys',   emoji:'🍳', label:"Denny's" },
+      { id:'r_cracker',  emoji:'🪑', label:'Cracker Barrel' },
+      { id:'r_bww',      emoji:'🍗', label:'Buffalo Wild Wings' },
+      { id:'r_robin',    emoji:'🍔', label:'Red Robin' },
+      { id:'r_cake',     emoji:'🍰', label:'Cheesecake Factory' },
+      { id:'r_jumper',   emoji:'⛏️', label:'Claim Jumper' },
+      { id:'r_other',    emoji:'🍴', label:'Other Sit Down Restaurant' },
+    ]
+  },
+  { id:'fastfood', label:'Fast Food', emoji:'🍟', color:'#D97706', bg:'#FFFBEB',
+    acts:[
+      { id:'f_panda',    emoji:'🐼', label:'Panda Express' },
+      { id:'f_peiwei',   emoji:'🥢', label:'Pei Wei' },
+      { id:'f_bk',       emoji:'👑', label:'Burger King' },
+      { id:'f_wendys',   emoji:'🌿', label:"Wendy's" },
+      { id:'f_jack',     emoji:'🎃', label:'Jack in the Box' },
+      { id:'f_mcds',     emoji:'🍟', label:"McDonald's" },
+      { id:'f_heng',     emoji:'🥡', label:'Chinese Big Heng' },
+      { id:'f_taco',     emoji:'🌮', label:'Taco Bell' },
+      { id:'f_whata',    emoji:'🍔', label:'Whataburger' },
+      { id:'f_subway',   emoji:'🥖', label:'Subway' },
+      { id:'f_jersey',   emoji:'🥪', label:"Jersey Mike's" },
+      { id:'f_jimmy',    emoji:'🥖', label:"Jimmy John's" },
+      { id:'f_jamba',    emoji:'🍓', label:'Jamba Juice' },
+      { id:'f_chick',    emoji:'🐔', label:'Chick-fil-A' },
+      { id:'f_canes',    emoji:'🍗', label:"Raising Cane's" },
+      { id:'f_del',      emoji:'🌯', label:'Del Taco' },
+      { id:'f_pizza',    emoji:'🍕', label:'Pizza Hut' },
+      { id:'f_dominos',  emoji:'🍕', label:"Domino's" },
+      { id:'f_caesar',   emoji:'🍕', label:"Little Caesars" },
+      { id:'f_sonic',    emoji:'🛼', label:'Sonic' },
+      { id:'f_dq',       emoji:'🍦', label:'Dairy Queen' },
+      { id:'f_baskin',   emoji:'🍨', label:'Baskin Robbins' },
+      { id:'f_dutch',    emoji:'☕', label:'Dutch Bros Coffee' },
+      { id:'f_starbucks',emoji:'🌟', label:'Starbucks' },
+      { id:'f_other',    emoji:'🍔', label:'Other Fast Food' },
+    ]
+  },
+  { id:'entertain', label:'Entertainment & Fun', emoji:'🎭', color:'#7C3AED', bg:'#EDE9FE',
+    acts:[
+      { id:'e_movies',   emoji:'🎬', label:'Movies at the Theater' },
+      { id:'e_bowl',     emoji:'🎳', label:'Bowling' },
+      { id:'e_casino',   emoji:'🎰', label:'Casino Outing' },
+      { id:'e_party',    emoji:'🎉', label:'Party or Celebration' },
+      { id:'e_bday',     emoji:'🎂', label:'Birthday Party' },
+      { id:'e_holiday',  emoji:'🎊', label:'Holiday Celebration' },
+      { id:'e_vaca',     emoji:'✈️', label:'Vacation Day' },
+      { id:'e_hotel',    emoji:'🏨', label:'Hotel Stay' },
+      { id:'e_road',     emoji:'🚗', label:'Road Trip' },
+      { id:'e_concert',  emoji:'🎵', label:'Concert or Show' },
+      { id:'e_sports',   emoji:'🏟️', label:'Sports Game' },
+      { id:'e_arcade',   emoji:'🕹️', label:'Arcade Games' },
+      { id:'e_golf',     emoji:'⛳', label:'Mini Golf' },
+      { id:'e_kart',     emoji:'🏎️', label:'Go Kart Racing' },
+      { id:'e_tramp',    emoji:'🤸', label:'Trampoline Park' },
+      { id:'e_water',    emoji:'💦', label:'Water Park' },
+      { id:'e_amusement',emoji:'🎡', label:'Amusement Park' },
+      { id:'e_zoo',      emoji:'🦁', label:'Zoo Visit' },
+      { id:'e_aqua',     emoji:'🐠', label:'Aquarium Visit' },
+      { id:'e_museum',   emoji:'🏛️', label:'Museum Visit' },
+    ]
+  },
+  { id:'community', label:'Community & Social', emoji:'🤝', color:'#059669', bg:'#ECFDF5',
+    acts:[
+      { id:'c_ds',       emoji:'💜', label:'DS Network Event' },
+      { id:'c_dads',     emoji:'👨', label:'Dads Group Event' },
+      { id:'c_comm',     emoji:'🏘️', label:'Community Event' },
+      { id:'c_vol',      emoji:'🙋', label:'Volunteer Activity' },
+      { id:'c_church',   emoji:'⛪', label:'Church or Religious Service' },
+      { id:'c_club',     emoji:'👥', label:'Club or Group Meeting' },
+      { id:'c_play',     emoji:'👫', label:'Playdate with Friend' },
+      { id:'c_family',   emoji:'👨‍👩‍👧', label:'Family Gathering' },
+      { id:'c_hparty',   emoji:'🎊', label:'Holiday Party' },
+      { id:'c_neighbor', emoji:'🏡', label:'Neighborhood Event' },
+      { id:'c_school',   emoji:'🏫', label:'School Event' },
+    ]
+  },
+  { id:'shopping', label:'Shopping & Errands', emoji:'🛍️', color:'#DB2777', bg:'#FDF2F8',
+    acts:[
+      { id:'s_grocery',  emoji:'🛒', label:'Grocery Shopping' },
+      { id:'s_target',   emoji:'🎯', label:'Target Shopping' },
+      { id:'s_walmart',  emoji:'🏪', label:'Walmart Shopping' },
+      { id:'s_costco',   emoji:'🏬', label:'Costco Run' },
+      { id:'s_mall',     emoji:'🛍️', label:'Mall Shopping' },
+      { id:'s_thrift',   emoji:'🧺', label:'Thrift Store or Goodwill' },
+      { id:'s_dollar',   emoji:'💵', label:'Dollar Store' },
+      { id:'s_hd',       emoji:'🔨', label:'Home Depot' },
+      { id:'s_pet',      emoji:'🐾', label:'Pet Store' },
+      { id:'s_book',     emoji:'📚', label:'Book Store' },
+      { id:'s_coffee',   emoji:'☕', label:'Coffee Shop Outing' },
+      { id:'s_pharmacy', emoji:'💊', label:'Pharmacy Pickup' },
+      { id:'s_post',     emoji:'📮', label:'Post Office' },
+    ]
+  },
+  { id:'homefun', label:'Everyday Fun at Home', emoji:'🏠', color:'#0369A1', bg:'#EFF6FF',
+    acts:[
+      { id:'h_movienite',emoji:'🎬', label:'Movie Night at Home' },
+      { id:'h_gamenight',emoji:'🎲', label:'Game Night' },
+      { id:'h_bake',     emoji:'🧁', label:'Baking Day' },
+      { id:'h_cook',     emoji:'🍳', label:'Cooking a Meal Together' },
+      { id:'h_art',      emoji:'🎨', label:'Art Project' },
+      { id:'h_craft',    emoji:'✂️', label:'Craft Project' },
+      { id:'h_music',    emoji:'🎵', label:'Music Time' },
+      { id:'h_dance',    emoji:'💃', label:'Dance Party' },
+      { id:'h_karaoke',  emoji:'🎤', label:'Karaoke at Home' },
+      { id:'h_puzzle',   emoji:'🧩', label:'Puzzle Time' },
+      { id:'h_color',    emoji:'🖍️', label:'Coloring' },
+      { id:'h_paint',    emoji:'🖼️', label:'Painting' },
+      { id:'h_garden',   emoji:'🌱', label:'Gardening' },
+      { id:'h_pets',     emoji:'🐶', label:'Playing with Pets' },
+      { id:'h_board',    emoji:'♟️', label:'Board Games' },
+      { id:'h_cards',    emoji:'🃏', label:'Card Games' },
+      { id:'h_video',    emoji:'🎮', label:'Video Games' },
+      { id:'h_show',     emoji:'📺', label:'Watch Favorite Show' },
+      { id:'h_listmusic',emoji:'🎧', label:'Listen to Music' },
+    ]
+  },
+  { id:'exercise', label:'Exercise & Movement', emoji:'🏃', color:'#0F766E', bg:'#F0FDFA',
+    acts:[
+      { id:'x_walk',     emoji:'🚶', label:'Walk Around the Neighborhood' },
+      { id:'x_park',     emoji:'🌳', label:'Park Walk' },
+      { id:'x_trail',    emoji:'🏞️', label:'Nature Trail Walk' },
+      { id:'x_swim',     emoji:'🏊', label:'Swimming' },
+      { id:'x_gym',      emoji:'🏋️', label:'Gym Workout' },
+      { id:'x_yoga',     emoji:'🧘', label:'Yoga or Stretching' },
+      { id:'x_dance',    emoji:'💃', label:'Dance Class' },
+      { id:'x_dancehome',emoji:'🕺', label:'Dance at Home' },
+      { id:'x_bike',     emoji:'🚲', label:'Bike Ride' },
+      { id:'x_chair',    emoji:'🪑', label:'Chair Exercises' },
+      { id:'x_zumba',    emoji:'🎶', label:'Zumba Video' },
+      { id:'x_justdance',emoji:'🎮', label:'Just Dance Game' },
+    ]
+  },
+  { id:'selfcare', label:'Self Care & Beauty', emoji:'💅', color:'#BE185D', bg:'#FDF2F8',
+    acts:[
+      { id:'b_hair',     emoji:'💇', label:'Hair Appointment' },
+      { id:'b_nails',    emoji:'💅', label:'Nail Appointment' },
+      { id:'b_spa',      emoji:'🛁', label:'Spa Day' },
+      { id:'b_massage',  emoji:'💆', label:'Massage' },
+      { id:'b_outfit',   emoji:'👗', label:'New Outfit Shopping' },
+      { id:'b_makeup',   emoji:'💄', label:'Makeup Day' },
+      { id:'b_mask',     emoji:'🧖', label:'Face Mask at Home' },
+      { id:'b_bath',     emoji:'🛀', label:'Bath Time Treat' },
+    ]
+  },
+  { id:'learning', label:'Learning & Skills', emoji:'📚', color:'#1D4ED8', bg:'#EFF6FF',
+    acts:[
+      { id:'l_cook',     emoji:'🍳', label:'Cooking Lesson' },
+      { id:'l_money',    emoji:'💰', label:'Money Practice' },
+      { id:'l_phone',    emoji:'📱', label:'Phone Skills' },
+      { id:'l_computer', emoji:'💻', label:'Computer Time' },
+      { id:'l_read',     emoji:'📖', label:'Reading' },
+      { id:'l_write',    emoji:'✏️', label:'Writing Practice' },
+      { id:'l_puzzle',   emoji:'🧩', label:'Puzzle Solving' },
+      { id:'l_life',     emoji:'🌟', label:'Life Skills Practice' },
+      { id:'l_job',      emoji:'💼', label:'Job Skills Practice' },
+      { id:'l_laundry',  emoji:'🧺', label:'Laundry Helper' },
+    ]
+  },
+  { id:'dailycare', label:'Daily Essentials', emoji:'🌿', color:'#0F766E', bg:'#F0FDFA',
+    acts:[
+      { id:'dc_bfast',   emoji:'🥞', label:'Eat Breakfast' },
+      { id:'dc_snack',   emoji:'🍎', label:'Have a Snack' },
+      { id:'dc_lunch',   emoji:'🥗', label:'Eat Lunch' },
+      { id:'dc_dinner',  emoji:'🍽️', label:'Eat Dinner' },
+      { id:'dc_mealprep',emoji:'👩‍🍳', label:'Help with Meal Prep' },
+      { id:'dc_cleanup', emoji:'🧹', label:'Clean Up After Eating' },
+      { id:'dc_meds',    emoji:'💊', label:'Take Medicine / Vitamins' },
+      { id:'dc_water',   emoji:'💧', label:'Drink Water' },
+      { id:'dc_break',   emoji:'😌', label:'Take a Break' },
+      { id:'dc_bathroom',emoji:'🚻', label:'Bathroom Break' },
+      { id:'dc_nap',     emoji:'😴', label:'Rest / Nap Time' },
+      { id:'dc_hygiene', emoji:'🪥', label:'Brush Teeth' },
+      { id:'dc_wash',    emoji:'🧼', label:'Wash Hands / Face' },
+      { id:'dc_tidy',    emoji:'🧽', label:'Tidy Up My Space' },
+    ]
+  },
+  { id:'custom', label:'Other (Type Your Own)', emoji:'✏️', color:'#6B7280', bg:'#F9FAFB', acts:[] },
+];
+
+/* ─────────────────────────────────────────────
+   STORAGE
+───────────────────────────────────────────── */
+const SK = 'erica_';
+
+function saveRaw(key, val) {
+  try { localStorage.setItem(SK + key, JSON.stringify(val)); } catch(e) {}
+}
+function loadRaw(key, def) {
+  try {
+    const v = localStorage.getItem(SK + key);
+    return v !== null ? JSON.parse(v) : def;
+  } catch(e) { return def; }
+}
+
+function todayKey() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function formatDateLabel(dk) {
+  if (!dk) return '';
+  const [y,m,d] = dk.split('-').map(Number);
+  const dt = new Date(y, m-1, d);
+  return dt.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
+}
+
+function loadDay(dk) {
+  return loadRaw('day_' + dk, { morning:[], afternoon:[], evening:[] });
+}
+function saveDay(dk, data) {
+  saveRaw('day_' + dk, data);
+}
+
+function loadRoutine(dk) { return loadRaw('routine_' + dk, {}); }
+function saveRoutine(dk, data) { saveRaw('routine_' + dk, data); }
+
+function loadMeds(dk) { return loadRaw('meds_' + dk, {}); }
+function saveMeds(dk, data) { saveRaw('meds_' + dk, data); }
+
+function loadWater(dk) { return loadRaw('water_' + (dk || todayKey()), 0); }
+function saveWater(dk, n) { saveRaw('water_' + dk, n); }
+
+function loadJoy() { return loadRaw('joy_all', []); }
+function persistJoyData(arr) { saveRaw('joy_all', arr); }
+
+function getSettings() {
+  const defaults = { mode:'flexible', theme:'romalite', textSize:'normal', voiceSpeed:'medium' };
+  return Object.assign({}, defaults, loadRaw('settings', {}));
+}
+function loadSettings() { return getSettings(); }
+function saveSettings(s) { saveRaw('settings', s); }
+
+/* ─── NAME ─── */
+function getUserName() { return localStorage.getItem('plannerUserName') || 'Friend'; }
+function setUserName(n) { localStorage.setItem('plannerUserName', (n||'').trim() || 'Friend'); }
+
+function saveWelcomeName() {
+  const n = (document.getElementById('welcomeNameInput').value || '').trim();
+  if (!n) { speak('Please type your name!'); return; }
+  setUserName(n);
+  document.getElementById('welcomeScreen').classList.remove('show');
+  renderHeader();
+  speak('Welcome ' + n + '! Your planner is ready. Have a wonderful day!');
+}
+
+function saveChangedName() {
+  const n = (document.getElementById('settingsNameInput').value || '').trim();
+  if (!n) { speak('Please type a name!'); return; }
+  setUserName(n);
+  document.getElementById('settingsNameInput').value = '';
+  document.getElementById('settingsNameDisplay').textContent = n;
+  renderHeader();
+  showToast('✓', 'Name saved: ' + n);
+  speak('Your name has been changed to ' + n);
+}
+
+/* ─────────────────────────────────────────────
+   DATE / TIME HELPERS
+───────────────────────────────────────────── */
+function now() { return new Date(); }
+
+function fullDate() {
+  const d = now();
+  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  return `${days[d.getDay()]}, ${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+}
+
+function greeting() {
+  const h = now().getHours();
+  const n = getUserName();
+  if (h < 12) return `Good Morning, ${n}! ☀️`;
+  if (h < 17) return `Good Afternoon, ${n}! 🌤️`;
+  return `Good Evening, ${n}! 🌙`;
+}
+
+function getMode() { return getSettings().mode || 'flexible'; }
+
+function displayTime(t) {
+  if (!t) return '';
+  const [h, m] = t.split(':').map(Number);
+  const mode = getMode();
+  if (mode === 'flexible') {
+    if (h < 12) return '🌅 This Morning';
+    if (h < 13) return '🌞 Around Noon';
+    if (h < 17) return '☀️ This Afternoon';
+    if (h < 21) return '🌙 This Evening';
+    return '🌃 Tonight';
+  }
+  const ampm = h < 12 ? 'AM' : 'PM';
+  const h12 = h === 0 ? 12 : h > 12 ? h - 12 : h;
+  const mm = String(m).padStart(2, '0');
+  return `${h12}:${mm} ${ampm}`;
+}
+
+function defaultTimeForSection(sec) {
+  if (sec === 'morning') return '09:00';
+  if (sec === 'afternoon') return '13:00';
+  return '18:00';
+}
+
+function generateId() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+}
+
+/* ─────────────────────────────────────────────
+   SPEECH
+───────────────────────────────────────────── */
+let currentUtterance = null;
+
+function stripEmojis(t) {
+  return String(t)
+    .replace(/[\u{1F300}-\u{1FFFF}]/gu,'')
+    .replace(/[\u2600-\u27BF]/gu,'')
+    .replace(/[\uFE00-\uFE0F]/gu,'')
+    .replace(/[\u200D]/g,'')
+    .replace(/\s+/g,' ').trim();
+}
+
+function speak(text) {
+  if (!window.speechSynthesis) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(stripEmojis(text));
+  const spd = getSettings().voiceSpeed || 'medium';
+  u.rate = spd === 'slow' ? 0.7 : spd === 'fast' ? 1.1 : 0.85;
+  u.pitch = 1.1;
+  u.volume = 1;
+  u.onend = () => {
+    document.getElementById('stopBtn').classList.remove('vis');
+    document.querySelectorAll('.spk.speaking').forEach(b => b.classList.remove('speaking'));
+  };
+  currentUtterance = u;
+  speechSynthesis.speak(u);
+  document.getElementById('stopBtn').classList.add('vis');
+}
+
+function stopSpeak() {
+  if (window.speechSynthesis) speechSynthesis.cancel();
+  document.getElementById('stopBtn').classList.remove('vis');
+  document.querySelectorAll('.spk.speaking').forEach(b => b.classList.remove('speaking'));
+}
+
+function readMyDay() {
+  const dk = todayKey();
+  const day = loadDay(dk);
+  let txt = `${greeting()} Today is ${fullDate()}. `;
+
+  const morningItems = [...(day.morning || [])];
+  const afternoonItems = [...(day.afternoon || [])];
+  const eveningItems = [...(day.evening || [])];
+
+  const total = morningItems.length + afternoonItems.length + eveningItems.length;
+  if (total === 0) {
+    txt += "You don't have anything planned yet today. Tap Add Activity to add something fun! ";
+  } else {
+    txt += `You have ${total} ${total === 1 ? 'thing' : 'things'} planned today. `;
+    if (morningItems.length) {
+      txt += `In the morning: ${morningItems.map(a => a.label).join(', ')}. `;
+    }
+    if (afternoonItems.length) {
+      txt += `In the afternoon: ${afternoonItems.map(a => a.label).join(', ')}. `;
+    }
+    if (eveningItems.length) {
+      txt += `This evening: ${eveningItems.map(a => a.label).join(', ')}. `;
+    }
+  }
+  txt += `You have got this, ${getUserName()}! Have a wonderful day!`;
+  speak(txt);
+}
+
+function readSection(sec) {
+  const dk = todayKey();
+  const day = loadDay(dk);
+  const acts = (day[sec] || []);
+  const label = sec === 'morning' ? 'morning' : sec === 'afternoon' ? 'afternoon' : 'evening';
+  if (acts.length === 0) {
+    speak(`Nothing planned for the ${label} yet. Tap Add Activity to add something!`);
+  } else {
+    const txt = `Here is the ${label} plan. ${acts.map((a,i) => `${i+1}: ${a.label}${a.time ? ' at ' + displayTime(a.time) : ''}.`).join(' ')}`;
+    speak(txt);
+  }
+}
+
+function readWeek() {
+  let txt = 'Here is your week. ';
+  const weekDays = getWeekDays();
+  weekDays.forEach(wd => {
+    const day = loadDay(wd.key);
+    const all = [...(day.morning||[]), ...(day.afternoon||[]), ...(day.evening||[])];
+    if (all.length) {
+      txt += `${wd.name}: ${all.map(a => a.label).join(', ')}. `;
+    } else {
+      txt += `${wd.name}: Nothing planned yet. `;
+    }
+  });
+  speak(txt);
+}
+
+/* ─────────────────────────────────────────────
+   NAVIGATION
+───────────────────────────────────────────── */
+function jumpTo(sec) {
+  document.getElementById('weekView').style.display = 'none';
+  document.getElementById('settingsView').style.display = 'none';
+  document.getElementById('dailyView').style.display = 'block';
+  const el = document.getElementById('section-' + sec);
+  if (el) el.scrollIntoView({ behavior:'smooth' });
+  setActiveNav(sec);
+}
+
+function showSettings() {
+  document.getElementById('dailyView').style.display = 'none';
+  document.getElementById('weekView').style.display = 'none';
+  document.getElementById('settingsView').style.display = 'block';
+  setActiveNav('settings');
+  window.scrollTo(0, 0);
+  renderSettings();
+}
+
+function hideSettings() {
+  document.getElementById('settingsView').style.display = 'none';
+  document.getElementById('dailyView').style.display = 'block';
+  setActiveNav('morning');
+  window.scrollTo(0, 0);
+}
+
+function setActiveNav(sec) {
+  document.querySelectorAll('.snav-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('snav-' + sec);
+  if (btn) btn.classList.add('active');
+}
+
+function showWeek() {
+  document.getElementById('dailyView').style.display = 'none';
+  document.getElementById('weekView').style.display = 'block';
+  setActiveNav('week');
+  window.scrollTo(0, 0);
+  renderWeek();
+}
+
+function hideWeek() {
+  document.getElementById('weekView').style.display = 'none';
+  document.getElementById('settingsView').style.display = 'none';
+  document.getElementById('dailyView').style.display = 'block';
+  setActiveNav('morning');
+  window.scrollTo(0, 0);
+}
+
+// Scroll-spy
+window.addEventListener('scroll', () => {
+  if (document.getElementById('weekView').style.display === 'block') return;
+  const nav = document.querySelector('.sticky-nav');
+  const navH = nav ? nav.getBoundingClientRect().height : 74;
+  const offset = navH + 60;
+  const secs = ['morning','afternoon','evening'];
+  let active = 'morning';
+  secs.forEach(s => {
+    const el = document.getElementById('section-' + s);
+    if (el && el.getBoundingClientRect().top <= offset) active = s;
+  });
+  setActiveNav(active);
+}, { passive: true });
+
+/* ─────────────────────────────────────────────
+   MODE TOGGLE
+───────────────────────────────────────────── */
+function toggleMode() {
+  const chk = document.getElementById('modeChk');
+  const settings = loadSettings();
+  settings.mode = chk.checked ? 'strict' : 'flexible';
+  saveSettings(settings);
+  renderModeBar();
+  renderAllActivities();
+  speak(settings.mode === 'strict'
+    ? 'Switched to strict mode. Times show the exact time.'
+    : 'Switched to flexible mode. Times show This Morning or This Afternoon.');
+}
+
+function renderModeBar() {
+  const mode = getMode();
+  const chk = document.getElementById('modeChk');
+  const lblL = document.getElementById('modeLblL');
+  const lblR = document.getElementById('modeLblR');
+  chk.checked = (mode === 'strict');
+  if (mode === 'strict') {
+    lblL.classList.remove('on'); lblR.classList.add('on');
+  } else {
+    lblL.classList.add('on'); lblR.classList.remove('on');
+  }
+}
+
+/* ─────────────────────────────────────────────
+   HEADER
+───────────────────────────────────────────── */
+function renderHeader() {
+  document.getElementById('gHello').textContent = greeting();
+  document.getElementById('gDate').textContent = fullDate();
+  const dk = todayKey();
+  const day = loadDay(dk);
+  const total = (day.morning||[]).length + (day.afternoon||[]).length + (day.evening||[]).length;
+  document.getElementById('gCount').textContent =
+    total === 0 ? "You have nothing planned yet — let's add something fun!"
+    : `You have ${total} ${total === 1 ? 'thing' : 'things'} planned today ✨`;
+}
+
+/* ─────────────────────────────────────────────
+   MORNING ROUTINE
+───────────────────────────────────────────── */
+function renderMorningRoutine() {
+  const dk = todayKey();
+  const done = loadRoutine(dk);
+  const container = document.getElementById('morningRoutineList');
+  container.innerHTML = '';
+  getRoutineItems().forEach(item => {
+    const isDone = !!done[item.id];
+    const div = document.createElement('div');
+    div.className = 'chk-item' + (isDone ? ' done' : '');
+    div.id = 'ri_' + item.id;
+    div.innerHTML = `
+      <span class="chk-ico">${item.emoji}</span>
+      <div class="chk-info">
+        <div class="chk-txt">${item.text}</div>
+        <div class="chk-sub">${item.sub}</div>
+      </div>
+      <button class="spk" onclick="speak('${item.text}. ${item.sub}');event.stopPropagation();">🔊</button>
+      <div class="chk-circle" onclick="toggleRoutine('${item.id}');event.stopPropagation();">${isDone ? '✓' : ''}</div>
+    `;
+    div.addEventListener('click', () => toggleRoutine(item.id));
+    container.appendChild(div);
+  });
+  updateRoutineProgress();
+}
+
+function toggleRoutine(id) {
+  const dk = todayKey();
+  const done = loadRoutine(dk);
+  done[id] = !done[id];
+  saveRoutine(dk, done);
+  const el = document.getElementById('ri_' + id);
+  if (!el) return;
+  el.classList.toggle('done', done[id]);
+  el.querySelector('.chk-circle').textContent = done[id] ? '✓' : '';
+  if (done[id]) bump(el);
+  updateRoutineProgress();
+  checkRoutineComplete();
+  renderStatusCard();
+}
+
+function updateRoutineProgress() {
+  const dk = todayKey();
+  const done = loadRoutine(dk);
+  const total = getRoutineItems().length;
+  const n = Object.values(done).filter(Boolean).length;
+  const pct = Math.round(n / total * 100);
+  document.getElementById('routineProg').style.width = pct + '%';
+  document.getElementById('routineLbl').textContent = `${n} of ${total} done`;
+}
+
+function checkRoutineComplete() {
+  const dk = todayKey();
+  const done = loadRoutine(dk);
+  const total = getRoutineItems().length;
+  const n = Object.values(done).filter(Boolean).length;
+  if (n === total) {
+    const flags = loadRaw('cel_flags_' + dk, {});
+    if (!flags.routine) {
+      flags.routine = true;
+      saveRaw('cel_flags_' + dk, flags);
+      showCel('🌟', 'Whole Morning Routine Done!',
+        `You finished your ENTIRE morning routine! You are absolutely incredible, ${getUserName()}!`);
+      confetti(50);
+    }
+  }
+}
+
+
+/* ─────────────────────────────────────────────
+   WATER TRACKER
+───────────────────────────────────────────── */
+function renderWater() {
+  const dk = todayKey();
+  const n = loadWater(dk);
+  document.getElementById('waterNum').textContent = n;
+  const container = document.getElementById('waterGlasses');
+  container.innerHTML = '';
+  for (let i = 0; i < 8; i++) {
+    const div = document.createElement('div');
+    div.className = 'glass' + (i < n ? ' full' : '');
+    div.textContent = i < n ? '' : '○';
+    div.addEventListener('click', () => { setWater(i < n ? i : i + 1); });
+    container.appendChild(div);
+  }
+  const msg = document.getElementById('waterMsg');
+  if (n >= 8) {
+    msg.textContent = '🎉 Goal complete! 8 glasses done!';
+    msg.className = 'water-msg great';
+  } else {
+    const r = 8 - n;
+    msg.textContent = `${r} more glass${r !== 1 ? 'es' : ''} to reach your goal! 💪`;
+    msg.className = 'water-msg';
+  }
+}
+
+function addWater() { const dk = todayKey(); setWater(Math.min(loadWater(dk) + 1, 8)); }
+function removeWater() { const dk = todayKey(); setWater(Math.max(loadWater(dk) - 1, 0)); }
+
+function setWater(n) {
+  const dk = todayKey();
+  const prev = loadWater(dk);
+  saveWater(dk, n);
+  renderWater();
+  renderStatusCard();
+  if (n >= 8 && prev < 8) {
+    const flags = loadRaw('cel_flags_' + dk, {});
+    if (!flags.water) {
+      flags.water = true;
+      saveRaw('cel_flags_' + dk, flags);
+      showCel('💧', '8 Glasses! You Did It!',
+        'You drank all 8 glasses of water today! Your whole body says THANK YOU! 🎉💙');
+      confetti(35);
+    }
+  }
+}
+
+/* ─────────────────────────────────────────────
+   ACTIVITIES — RENDER
+───────────────────────────────────────────── */
+function renderAllActivities() {
+  renderActSection('morning', 'morningActList', '');
+  renderActSection('afternoon', 'afternoonActList', '');
+  renderActSection('evening', 'eveningActList', 'act-dark');
+  renderHeader();
+  renderStatusCard();
+}
+
+function renderActSection(sec, containerId, extraClass) {
+  const dk = todayKey();
+  const day = loadDay(dk);
+  const acts = day[sec] || [];
+  const container = document.getElementById(containerId);
+  container.innerHTML = '';
+  if (acts.length === 0) {
+    const div = document.createElement('div');
+    div.className = 'no-acts' + (extraClass ? ' no-acts-dark' : '');
+    div.textContent = 'Nothing planned yet — tap the button below! 👇';
+    container.appendChild(div);
+    return;
+  }
+  acts.forEach(act => {
+    const div = document.createElement('div');
+    div.className = 'act-item' + (extraClass ? ' ' + extraClass : '') + (act.done ? ' done' : '');
+    div.id = 'act_' + act.id;
+
+    const timeDisplay = act.time ? displayTime(act.time) : '';
+    const meta = [];
+    if (act.companions) meta.push('👥 ' + act.companions);
+    if (act.transport) meta.push(act.transport);
+    const excMap = { 1:'😊', 2:'😄', 3:'🤩' };
+    if (act.excitement) meta.push(excMap[act.excitement] || '');
+
+    div.innerHTML = `
+      <span class="act-emo">${act.emoji}</span>
+      <div class="act-info">
+        <div class="act-lbl">${act.label}</div>
+        ${timeDisplay ? `<span class="act-time" onclick="openTimeEdit('${sec}','${act.id}');event.stopPropagation();" title="Tap to change time">${timeDisplay} ✏️</span>` : ''}
+        ${meta.length ? `<div class="act-meta">${meta.join(' · ')}</div>` : ''}
+      </div>
+      <div class="act-actions">
+        <button class="spk" onclick="speak('${act.label}${act.time ? ' at ' + displayTime(act.time) : ''}${act.companions ? ', with ' + act.companions : ''}');event.stopPropagation();">🔊</button>
+        <div class="act-done-btn" onclick="toggleActDone('${sec}','${act.id}');event.stopPropagation();">${act.done ? '✓' : ''}</div>
+        <div class="act-del" onclick="deleteAct('${sec}','${act.id}');event.stopPropagation();">✕</div>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function toggleActDone(sec, id) {
+  const dk = todayKey();
+  const day = loadDay(dk);
+  const act = (day[sec] || []).find(a => a.id === id);
+  if (!act) return;
+  act.done = !act.done;
+  saveDay(dk, day);
+  renderActSection(sec, sec + 'ActList', sec === 'evening' ? 'act-dark' : '');
+  if (act.done) {
+    const msgs = [
+      `Great job! You did ${act.label}!`,
+      `Way to go! ${act.label} is done!`,
+      `Awesome work on ${act.label}!`,
+      `You did it! ${act.label} complete!`,
+    ];
+    const msg = msgs[Math.floor(Math.random() * msgs.length)];
+    showToast('⭐', msg.split('!')[0] + '!');
+    speak(msg);
+    confetti(12);
+  }
+}
+
+function deleteAct(sec, id) {
+  const dk = todayKey();
+  const day = loadDay(dk);
+  day[sec] = (day[sec] || []).filter(a => a.id !== id);
+  saveDay(dk, day);
+  renderActSection(sec, sec + 'ActList', sec === 'evening' ? 'act-dark' : '');
+  renderHeader();
+}
+
+/* ─────────────────────────────────────────────
+   TIME EDIT MODAL
+───────────────────────────────────────────── */
+let timeEditState = { sec: null, id: null };
+
+function openTimeEdit(sec, id) {
+  const dk = todayKey();
+  const day = loadDay(dk);
+  const act = (day[sec] || []).find(a => a.id === id);
+  if (!act) return;
+  timeEditState = { sec, id };
+  document.getElementById('timeEditInput').value = act.time || defaultTimeForSection(sec);
+  document.getElementById('timeModal').classList.add('show');
+}
+
+function closeTimeModal() {
+  document.getElementById('timeModal').classList.remove('show');
+  timeEditState = { sec: null, id: null };
+}
+
+function saveTimeEdit() {
+  const t = document.getElementById('timeEditInput').value;
+  const { sec, id } = timeEditState;
+  if (!sec || !id) return;
+  const dk = todayKey();
+  const day = loadDay(dk);
+  const act = (day[sec] || []).find(a => a.id === id);
+  if (act) { act.time = t; saveDay(dk, day); }
+  closeTimeModal();
+  renderActSection(sec, sec + 'ActList', sec === 'evening' ? 'act-dark' : '');
+  speak('Time changed to ' + displayTime(t));
+}
+
+/* ─────────────────────────────────────────────
+   ACTIVITY PICKER — MULTI-STEP MODAL
+───────────────────────────────────────────── */
+const pickerState = {
+  targetSection: null,
+  targetDate: null,       // null = today, else 'YYYY-MM-DD'
+  fromWeek: false,        // true when opened from weekly view
+  step: 'categories',     // 'categories' | 'activities' | 'details'
+  selectedCat: null,
+  selectedAct: null,
+  form: { time:'', companions:'', transport:'', excitement:0, notes:'' },
+};
+
+function openPicker(targetSection) {
+  pickerState.targetSection = targetSection;
+  pickerState.targetDate = null;
+  pickerState.fromWeek = false;
+  pickerState.step = 'categories';
+  pickerState.selectedCat = null;
+  pickerState.selectedAct = null;
+  pickerState.form = { time: defaultTimeForSection(targetSection), companions:'', transport:'', excitement:0, notes:'' };
+  document.getElementById('pickerModal').classList.add('show');
+  renderPickerStep();
+}
+
+function openPickerForDate(dateKey, section) {
+  pickerState.targetSection = section || 'morning';
+  pickerState.targetDate = dateKey;
+  pickerState.fromWeek = true;
+  pickerState.step = 'categories';
+  pickerState.selectedCat = null;
+  pickerState.selectedAct = null;
+  pickerState.form = { time: defaultTimeForSection(section || 'morning'), companions:'', transport:'', excitement:0, notes:'' };
+  document.getElementById('pickerModal').classList.add('show');
+  renderPickerStep();
+}
+
+function closePicker() {
+  document.getElementById('pickerModal').classList.remove('show');
+}
+
+function pickerGoBack() {
+  if (pickerState.step === 'activities') { pickerState.step = 'categories'; renderPickerStep(); }
+  else if (pickerState.step === 'details') { pickerState.step = 'activities'; renderPickerStep(); }
+  else closePicker();
+}
+
+function renderPickerStep() {
+  const backBtn = document.getElementById('pickerBack');
+  const titleEl = document.getElementById('pickerTitle');
+  const body = document.getElementById('pickerBody');
+
+  if (pickerState.step === 'categories') {
+    backBtn.textContent = '✕';
+    titleEl.textContent = 'Pick an Activity';
+    const grid = document.createElement('div');
+    grid.className = 'cat-grid';
+    ACTIVITY_LIBRARY.forEach(cat => {
+      const btn = document.createElement('button');
+      btn.className = 'cat-btn';
+      btn.style.cssText = `background:${cat.bg};border-color:${cat.color}40;`;
+      btn.innerHTML = `<span class="cat-ico">${cat.emoji}</span><span class="cat-lbl">${cat.label}</span>`;
+      btn.addEventListener('click', () => {
+        pickerState.selectedCat = cat.id;
+        pickerState.step = 'activities';
+        renderPickerStep();
+      });
+      grid.appendChild(btn);
+    });
+    body.innerHTML = '';
+    body.appendChild(grid);
+
+  } else if (pickerState.step === 'activities') {
+    const cat = ACTIVITY_LIBRARY.find(c => c.id === pickerState.selectedCat);
+    backBtn.textContent = '←';
+    titleEl.textContent = cat ? cat.label : 'Activities';
+    body.innerHTML = '';
+    if (pickerState.selectedCat === 'custom') {
+      renderCustomActStep(body);
+      return;
+    }
+    (cat ? cat.acts : []).forEach(act => {
+      const btn = document.createElement('button');
+      btn.className = 'act-opt-btn';
+      btn.innerHTML = `<span style="font-size:28px;">${act.emoji}</span><span>${act.label}</span>`;
+      btn.addEventListener('click', () => {
+        pickerState.selectedAct = act;
+        pickerState.step = 'details';
+        renderPickerStep();
+      });
+      body.appendChild(btn);
+    });
+
+  } else if (pickerState.step === 'details') {
+    const act = pickerState.selectedAct;
+    backBtn.textContent = '←';
+    titleEl.textContent = `${act.emoji} ${act.label}`;
+    body.innerHTML = '';
+
+    const f = pickerState.form;
+
+    // Time field
+    const timeWrap = document.createElement('div');
+    timeWrap.innerHTML = `
+      <label class="det-lbl">⏰ What time?</label>
+      <input type="time" class="det-input" id="det_time" value="${f.time}">
+    `;
+    body.appendChild(timeWrap);
+
+    // Companions
+    const compWrap = document.createElement('div');
+    compWrap.innerHTML = `
+      <label class="det-lbl">👥 Who is coming with me? (optional)</label>
+      <input type="text" class="det-input" id="det_comp" placeholder="Mom, Dad, Grandma…" value="${f.companions}">
+    `;
+    body.appendChild(compWrap);
+
+    // Transport
+    const transWrap = document.createElement('div');
+    transWrap.innerHTML = `<label class="det-lbl">🚗 How are we getting there? (optional)</label>`;
+    const transRow = document.createElement('div');
+    transRow.className = 'transp-row';
+    const transOpts = [
+      { v:'🚗 Drive', l:'🚗 Drive' },
+      { v:'🚶 Walk', l:'🚶 Walk' },
+      { v:'🚌 Ride', l:'🚌 Ride' },
+      { v:'🏠 Staying Home', l:'🏠 Home' },
+      { v:'✈️ Other', l:'✈️ Other' },
+    ];
+    transOpts.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.className = 'transp-btn' + (f.transport === opt.v ? ' sel' : '');
+      btn.textContent = opt.l;
+      btn.addEventListener('click', () => {
+        pickerState.form.transport = f.transport === opt.v ? '' : opt.v;
+        document.querySelectorAll('.transp-btn').forEach(b => b.classList.remove('sel'));
+        if (pickerState.form.transport) btn.classList.add('sel');
+      });
+      transRow.appendChild(btn);
+    });
+    transWrap.appendChild(transRow);
+    body.appendChild(transWrap);
+
+    // Excitement
+    const excWrap = document.createElement('div');
+    excWrap.innerHTML = `<label class="det-lbl" style="margin-bottom:8px;">How excited am I?</label>`;
+    const excRow = document.createElement('div');
+    excRow.className = 'exc-row';
+    [{ v:1, e:'😊' }, { v:2, e:'😄' }, { v:3, e:'🤩' }].forEach(opt => {
+      const btn = document.createElement('button');
+      btn.className = 'exc-btn' + (f.excitement === opt.v ? ' sel' : '');
+      btn.textContent = opt.e;
+      btn.addEventListener('click', () => {
+        pickerState.form.excitement = opt.v;
+        document.querySelectorAll('.exc-btn').forEach(b => b.classList.remove('sel'));
+        btn.classList.add('sel');
+      });
+      excRow.appendChild(btn);
+    });
+    excWrap.appendChild(excRow);
+    body.appendChild(excWrap);
+
+    // Notes
+    const notesWrap = document.createElement('div');
+    notesWrap.innerHTML = `
+      <label class="det-lbl" style="margin-top:8px;">📝 Notes (optional)</label>
+      <textarea class="det-input det-textarea" id="det_notes" placeholder="Anything to remember…">${f.notes}</textarea>
+    `;
+    body.appendChild(notesWrap);
+
+    // Read back button
+    const readBtn = document.createElement('button');
+    readBtn.className = 'g-read-btn';
+    readBtn.style.cssText = 'width:100%;margin-bottom:14px;background:var(--accent-l);color:var(--accent);border-color:var(--accent);';
+    readBtn.innerHTML = '🔊 Read Back My Activity Details';
+    readBtn.addEventListener('click', () => {
+      const t = document.getElementById('det_time').value;
+      const c = document.getElementById('det_comp').value;
+      const n = document.getElementById('det_notes').value;
+      let txt = `Activity: ${act.label}. `;
+      if (t) txt += `Time: ${displayTime(t)}. `;
+      if (pickerState.form.transport) txt += `Getting there by: ${pickerState.form.transport}. `;
+      if (c) txt += `Who is coming: ${c}. `;
+      if (n) txt += `Notes: ${n}. `;
+      speak(txt);
+    });
+    body.appendChild(readBtn);
+
+    // Section choice buttons
+    const chooseLabel = document.createElement('div');
+    const dateLabel = pickerState.targetDate && pickerState.targetDate !== todayKey()
+      ? ` <span style="font-size:13px;color:var(--accent);">(${formatDateLabel(pickerState.targetDate)})</span>` : '';
+    chooseLabel.innerHTML = `<label class="det-lbl">Add this to which part of my day?${dateLabel}</label>`;
+    body.appendChild(chooseLabel);
+    const row = document.createElement('div');
+    row.className = 'sec-choice-row';
+    [
+      { sec:'morning',   cls:'sc-morning',   lbl:'🌅 Morning' },
+      { sec:'afternoon', cls:'sc-afternoon',  lbl:'☀️ Afternoon' },
+      { sec:'evening',   cls:'sc-evening',    lbl:'🌙 Evening' },
+    ].forEach(opt => {
+      const btn = document.createElement('button');
+      btn.className = 'sec-choice-btn ' + opt.cls;
+      if (pickerState.targetSection === opt.sec) btn.style.outline = '4px solid white';
+      btn.innerHTML = `${opt.lbl}<span style="font-size:12px;opacity:.85;">Add here</span>`;
+      btn.addEventListener('click', () => addActivityFromPicker(opt.sec));
+      row.appendChild(btn);
+    });
+    body.appendChild(row);
+  }
+}
+
+function addActivityFromPicker(targetSec) {
+  const act = pickerState.selectedAct;
+  if (!act) return;
+  const t = document.getElementById('det_time') ? document.getElementById('det_time').value : pickerState.form.time;
+  const comp = document.getElementById('det_comp') ? document.getElementById('det_comp').value : '';
+  const notes = document.getElementById('det_notes') ? document.getElementById('det_notes').value : '';
+
+  const newAct = {
+    id: generateId(),
+    activityId: act.id,
+    label: act.label,
+    emoji: act.emoji,
+    time: t,
+    companions: comp.trim(),
+    transport: pickerState.form.transport,
+    excitement: pickerState.form.excitement,
+    notes: notes.trim(),
+    done: false,
+    addedAt: Date.now(),
+  };
+
+  const dk = pickerState.targetDate || todayKey();
+  const fromWeek = pickerState.fromWeek;
+  const day = loadDay(dk);
+  if (!day[targetSec]) day[targetSec] = [];
+  day[targetSec].push(newAct);
+  saveDay(dk, day);
+
+  closePicker();
+
+  if (fromWeek) {
+    renderWeek();
+    speak(`Great choice! ${act.label} added!`);
+  } else {
+    renderActSection(targetSec, targetSec + 'ActList', targetSec === 'evening' ? 'act-dark' : '');
+    renderHeader();
+    speak(`Great choice! ${act.label} has been added to your ${targetSec}! ${displayTime(t)}`);
+    setTimeout(() => jumpTo(targetSec), 400);
+  }
+}
+
+/* ─────────────────────────────────────────────
+   AFFIRMATIONS
+───────────────────────────────────────────── */
+let affIdx = 0;
+let affTimer = null;
+
+function renderAffirmDots() {
+  const cont = document.getElementById('affDots');
+  if (!cont) return;
+  cont.innerHTML = '';
+  AFFIRMATIONS.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'adot' + (i === affIdx ? ' on' : '');
+    d.addEventListener('click', () => setAffirm(i));
+    cont.appendChild(d);
+  });
+}
+
+function showAffirm(idx) {
+  const a = AFFIRMATIONS[idx];
+  const tx = document.getElementById('affTxt');
+  const sb = document.getElementById('affSub');
+  if (!tx) return;
+  tx.style.opacity = '0';
+  sb.style.opacity = '0';
+  setTimeout(() => {
+    tx.textContent = a.txt;
+    sb.textContent = a.sub;
+    tx.style.transition = 'opacity .4s';
+    sb.style.transition = 'opacity .4s';
+    tx.style.opacity = '1';
+    sb.style.opacity = '1';
+  }, 150);
+  document.querySelectorAll('.adot').forEach((d, i) => d.classList.toggle('on', i === idx));
+}
+
+function setAffirm(idx) { affIdx = idx; showAffirm(idx); resetAffTimer(); }
+
+function nextAffirm() {
+  affIdx = (affIdx + 1) % AFFIRMATIONS.length;
+  showAffirm(affIdx);
+  resetAffTimer();
+}
+
+function speakAffirm() {
+  const a = AFFIRMATIONS[affIdx];
+  speak(`${a.txt}. ${a.sub}`);
+}
+
+function resetAffTimer() {
+  if (affTimer) clearInterval(affTimer);
+  affTimer = setInterval(() => { affIdx = (affIdx + 1) % AFFIRMATIONS.length; showAffirm(affIdx); }, 7000);
+}
+
+/* ─────────────────────────────────────────────
+   JOY LOG
+───────────────────────────────────────────── */
+function renderJoyEmojis() {
+  const row = document.getElementById('joyEmojiRow');
+  if (!row) return;
+  row.innerHTML = '';
+  JOY_EMOJIS.forEach(e => {
+    const btn = document.createElement('button');
+    btn.className = 'joy-emo-btn';
+    btn.textContent = e;
+    btn.addEventListener('click', () => {
+      const ta = document.getElementById('joyTA');
+      ta.value += e;
+    });
+    row.appendChild(btn);
+  });
+}
+
+function saveJoy() {
+  const ta = document.getElementById('joyTA');
+  const text = ta.value.trim();
+  if (!text) {
+    speak('Please type or pick an emoji to describe your happy moment!');
+    return;
+  }
+  const entries = loadJoy();
+  entries.unshift({ date: fullDate(), text, id: Date.now() });
+  if (entries.length > 60) entries.pop();
+  persistJoyData(entries);
+  ta.value = '';
+  renderJoyEntries();
+  showCel('😊', 'Happy Moment Saved!',
+    `Thank you for sharing your joy, ${getUserName()}! You make the world so bright!`);
+  confetti(15);
+  speak(`Your happy moment has been saved! You are wonderful, ${getUserName()}!`);
+}
+
+function speakJoyInput() {
+  const text = document.getElementById('joyTA').value.trim();
+  speak(text || 'Type your happy moment first!');
+}
+
+function renderJoyEntries() {
+  const entries = loadJoy();
+  const cont = document.getElementById('joyList');
+  if (!cont) return;
+  cont.innerHTML = '';
+  if (entries.length === 0) {
+    cont.innerHTML = '<div style="color:rgba(224,231,255,.4);font-size:17px;text-align:center;padding:16px 0;">No happy moments yet — add your first one! 💛</div>';
+    return;
+  }
+  entries.slice(0, 8).forEach(e => {
+    const div = document.createElement('div');
+    div.className = 'joy-entry';
+    div.innerHTML = `
+      <div class="joy-entry-date">📅 ${e.date}</div>
+      <div class="joy-entry-txt">${escHtml(e.text)}</div>
+    `;
+    cont.appendChild(div);
+  });
+}
+
+function escHtml(t) {
+  return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+/* ─────────────────────────────────────────────
+   WEEKLY VIEW
+───────────────────────────────────────────── */
+function getWeekDays() {
+  const today = new Date();
+  const dayOfWeek = today.getDay(); // 0=Sun
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - ((dayOfWeek + 6) % 7)); // Mon
+  const dayNames = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return dayNames.map((name, i) => {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    const isToday = key === todayKey();
+    return { name, date: `${months[d.getMonth()]} ${d.getDate()}`, key, isToday };
+  });
+}
+
+function renderWeek() {
+  const cont = document.getElementById('weekContainer');
+  cont.innerHTML = '';
+  const weekDays = getWeekDays();
+  weekDays.forEach(wd => {
+    const day = loadDay(wd.key);
+    const all = [...(day.morning||[]), ...(day.afternoon||[]), ...(day.evening||[])];
+    const card = document.createElement('div');
+    card.className = 'wday-card' + (wd.isToday ? ' today' : '');
+
+    const hdr = document.createElement('div');
+    hdr.className = 'wday-hdr';
+    hdr.innerHTML = `
+      <div>
+        <div class="wday-name">${wd.name} ${wd.isToday ? '<span class="today-tag">Today</span>' : ''}</div>
+        <div class="wday-date">${wd.date}</div>
+      </div>
+      <div class="wday-preview">${all.length ? all.length + ' thing' + (all.length !== 1 ? 's' : '') : 'Nothing yet'}</div>
+      <button class="spk" style="margin-left:8px;" onclick="speakDayWeek('${wd.key}','${wd.name}');event.stopPropagation();">🔊</button>
+    `;
+
+    const acts = document.createElement('div');
+    acts.className = 'wday-acts' + (wd.isToday ? ' open' : '');
+    acts.id = 'wacts_' + wd.key;
+    if (all.length === 0) {
+      const noPlans = document.createElement('div');
+      noPlans.style.cssText = 'color:var(--muted);font-size:16px;padding:6px 0;';
+      noPlans.textContent = 'Nothing planned yet.';
+      acts.appendChild(noPlans);
+    } else {
+      // Group by section
+      const sections = [
+        { key:'morning', label:'Morning', emoji:'🌅' },
+        { key:'afternoon', label:'Afternoon', emoji:'☀️' },
+        { key:'evening', label:'Evening', emoji:'🌙' },
+      ];
+      sections.forEach(sec => {
+        const items = day[sec.key] || [];
+        if (items.length > 0) {
+          const secHdr = document.createElement('div');
+          secHdr.style.cssText = 'font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:8px 0 4px;';
+          secHdr.textContent = sec.emoji + ' ' + sec.label;
+          acts.appendChild(secHdr);
+          items.forEach(a => {
+            const row = document.createElement('div');
+            row.className = 'wday-act-row';
+            row.innerHTML = `<span>${a.emoji}</span><span>${a.label}${a.done ? ' ✓' : ''}</span>${a.time ? '<span style="color:var(--accent);font-weight:700;font-size:14px;">'+displayTime(a.time)+'</span>' : ''}`;
+            acts.appendChild(row);
+          });
+        }
+      });
+    }
+
+    // Add activity buttons for each section
+    const addRow = document.createElement('div');
+    addRow.style.cssText = 'display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;';
+    [
+      { sec:'morning',   lbl:'🌅 Morning',   color:'#F59E0B' },
+      { sec:'afternoon', lbl:'☀️ Afternoon',  color:'#0EA5E9' },
+      { sec:'evening',   lbl:'🌙 Evening',    color:'#7C3AED' },
+    ].forEach(opt => {
+      const btn = document.createElement('button');
+      btn.style.cssText = `background:${opt.color}18;border:1.5px solid ${opt.color}60;color:${opt.color};border-radius:20px;padding:5px 12px;font-size:13px;font-weight:700;cursor:pointer;`;
+      btn.textContent = '+ ' + opt.lbl;
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openPickerForDate(wd.key, opt.sec);
+      });
+      addRow.appendChild(btn);
+    });
+    acts.appendChild(addRow);
+
+    hdr.addEventListener('click', () => {
+      acts.classList.toggle('open');
+    });
+
+    card.appendChild(hdr);
+    card.appendChild(acts);
+    cont.appendChild(card);
+  });
+}
+
+function speakDayWeek(key, dayName) {
+  const day = loadDay(key);
+  const all = [...(day.morning||[]), ...(day.afternoon||[]), ...(day.evening||[])];
+  if (all.length === 0) {
+    speak(`${dayName}: Nothing planned yet.`);
+  } else {
+    speak(`${dayName}: ${all.map(a => a.label).join(', ')}.`);
+  }
+}
+
+/* ─────────────────────────────────────────────
+   CELEBRATION & CONFETTI
+───────────────────────────────────────────── */
+function showCel(emoji, title, msg) {
+  document.getElementById('celEmo').textContent = emoji;
+  document.getElementById('celTitle').textContent = title;
+  document.getElementById('celMsg').textContent = msg;
+  document.getElementById('celOverlay').classList.add('show');
+  speak(title + '. ' + msg);
+}
+function closeCel() {
+  document.getElementById('celOverlay').classList.remove('show');
+}
+
+const CONF_COLORS = ['#FF6B6B','#FF8E53','#FFD93D','#6BCB77','#4ECDC4','#45B7D1','#7C3AED','#F472B6','#10B981','#F59E0B'];
+
+function confetti(n = 40) {
+  const wrap = document.getElementById('confettiWrap');
+  for (let i = 0; i < n; i++) {
+    setTimeout(() => {
+      const p = document.createElement('div');
+      p.className = 'conf';
+      p.style.left = Math.random() * 100 + 'vw';
+      p.style.background = CONF_COLORS[Math.floor(Math.random() * CONF_COLORS.length)];
+      p.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+      const sz = 8 + Math.random() * 10;
+      p.style.width = p.style.height = sz + 'px';
+      const dur = 1.5 + Math.random() * 2;
+      p.style.animationDuration = dur + 's';
+      wrap.appendChild(p);
+      setTimeout(() => p.remove(), (dur + 0.2) * 1000);
+    }, i * 45);
+  }
+}
+
+/* ─────────────────────────────────────────────
+   TOAST
+───────────────────────────────────────────── */
+let toastTimer = null;
+function showToast(ico, msg) {
+  document.getElementById('toastIco').textContent = ico;
+  document.getElementById('toastMsg').textContent = msg;
+  const t = document.getElementById('toast');
+  t.classList.add('show');
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+/* ─────────────────────────────────────────────
+   ANIMATION HELPERS
+───────────────────────────────────────────── */
+function bump(el) {
+  if (!el) return;
+  el.style.transform = 'scale(1.04)';
+  setTimeout(() => { el.style.transform = ''; }, 200);
+}
+
+/* ─────────────────────────────────────────────
+   EDITABLE MORNING ROUTINE
+───────────────────────────────────────────── */
+const DEFAULT_ROUTINE = [
+  { id:'stretch',   emoji:'🧘', text:'Wake Up and Stretch',  sub:'Big stretchy yawn!' },
+  { id:'teeth',     emoji:'🦷', text:'Brush My Teeth',       sub:'2 full minutes!' },
+  { id:'face',      emoji:'💧', text:'Wash My Face',         sub:'Nice and clean!' },
+  { id:'dress',     emoji:'👗', text:'Get Dressed',          sub:'Pick your favorite outfit!' },
+  { id:'breakfast', emoji:'🥞', text:'Eat Breakfast',        sub:'Yummy morning food!' },
+];
+
+function getRoutineItems() {
+  const saved = loadRaw('routine_items', null);
+  return saved || DEFAULT_ROUTINE;
+}
+function saveRoutineItems(items) { saveRaw('routine_items', items); }
+
+const ROUTINE_EMOJIS = ['🧘','🦷','💧','👗','🥞','☀️','🚿','💊','🧴','🎒','👟','🧹','🐾','📱','🎵','🌸','☕','🥤','🏃','📝','🌟','❤️','😊','🎯','🌈'];
+
+let reItems = []; // working copy inside editor
+let reEmojiTarget = null; // which item is getting its emoji changed
+
+function openRoutineEditor() {
+  reItems = getRoutineItems().map(i => ({...i})); // deep copy
+  document.getElementById('routineEditorModal').classList.add('show');
+  renderRoutineEditor();
+}
+
+function closeRoutineEditor() {
+  document.getElementById('routineEditorModal').classList.remove('show');
+  reEmojiTarget = null;
+}
+
+function renderRoutineEditor() {
+  const body = document.getElementById('routineEditorBody');
+  body.innerHTML = '';
+
+  // List of current items
+  reItems.forEach((item, idx) => {
+    const row = document.createElement('div');
+    row.className = 're-item';
+    row.id = 're-row-' + idx;
+
+    const emojiBtn = document.createElement('button');
+    emojiBtn.className = 're-emoji-btn';
+    emojiBtn.textContent = item.emoji;
+    emojiBtn.title = 'Tap to change emoji';
+    emojiBtn.addEventListener('click', () => toggleEmojiPicker(idx, emojiBtn));
+
+    const textInput = document.createElement('input');
+    textInput.className = 're-text-input';
+    textInput.type = 'text';
+    textInput.value = item.text;
+    textInput.placeholder = 'Type step name…';
+    textInput.maxLength = 40;
+    textInput.addEventListener('input', () => { reItems[idx].text = textInput.value; });
+
+    const delBtn = document.createElement('button');
+    delBtn.className = 're-del-btn';
+    delBtn.innerHTML = '✕';
+    delBtn.title = 'Remove this step';
+    delBtn.addEventListener('click', () => {
+      reItems.splice(idx, 1);
+      renderRoutineEditor();
+    });
+
+    row.appendChild(emojiBtn);
+    row.appendChild(textInput);
+    row.appendChild(delBtn);
+    body.appendChild(row);
+
+    // Emoji picker (hidden until tapped)
+    const picker = document.createElement('div');
+    picker.id = 're-picker-' + idx;
+    picker.style.display = 'none';
+    const pickerRow = document.createElement('div');
+    pickerRow.className = 'emoji-picker-row';
+    ROUTINE_EMOJIS.forEach(e => {
+      const btn = document.createElement('button');
+      btn.className = 'ep-btn' + (item.emoji === e ? ' sel' : '');
+      btn.textContent = e;
+      btn.addEventListener('click', () => {
+        reItems[idx].emoji = e;
+        emojiBtn.textContent = e;
+        picker.style.display = 'none';
+        reEmojiTarget = null;
+        pickerRow.querySelectorAll('.ep-btn').forEach(b => b.classList.remove('sel'));
+        btn.classList.add('sel');
+      });
+      pickerRow.appendChild(btn);
+    });
+    picker.appendChild(pickerRow);
+    body.appendChild(picker);
+  });
+
+  // Add new step button
+  const addBtn = document.createElement('button');
+  addBtn.className = 're-add-btn';
+  addBtn.innerHTML = '➕ Add a Step';
+  addBtn.addEventListener('click', () => {
+    reItems.push({ id: 'custom_' + Date.now(), emoji: '🌟', text: '', sub: '' });
+    renderRoutineEditor();
+    // scroll to bottom of modal body
+    setTimeout(() => { body.scrollTop = body.scrollHeight; }, 50);
+  });
+  body.appendChild(addBtn);
+
+  // Save button
+  const saveBtn = document.createElement('button');
+  saveBtn.className = 're-save-btn';
+  saveBtn.textContent = '✓ Save My Routine';
+  saveBtn.addEventListener('click', saveRoutineEditor);
+  body.appendChild(saveBtn);
+
+  // Reset to default link
+  const resetLink = document.createElement('span');
+  resetLink.className = 're-reset-link';
+  resetLink.textContent = '↺ Reset to default routine';
+  resetLink.addEventListener('click', () => {
+    if (confirm('Reset to the original 5-step routine?')) {
+      reItems = DEFAULT_ROUTINE.map(i => ({...i}));
+      renderRoutineEditor();
+    }
+  });
+  body.appendChild(resetLink);
+}
+
+function toggleEmojiPicker(idx, btn) {
+  // Close any open picker first
+  if (reEmojiTarget !== null && reEmojiTarget !== idx) {
+    const old = document.getElementById('re-picker-' + reEmojiTarget);
+    if (old) old.style.display = 'none';
+  }
+  const picker = document.getElementById('re-picker-' + idx);
+  if (!picker) return;
+  const isOpen = picker.style.display !== 'none';
+  picker.style.display = isOpen ? 'none' : 'block';
+  reEmojiTarget = isOpen ? null : idx;
+}
+
+function saveRoutineEditor() {
+  // Validate — remove blank items
+  const cleaned = reItems
+    .map(i => ({ ...i, text: (i.text || '').trim() }))
+    .filter(i => i.text.length > 0);
+
+  if (cleaned.length === 0) {
+    speak('Please add at least one step to your routine!');
+    return;
+  }
+
+  saveRoutineItems(cleaned);
+  closeRoutineEditor();
+  renderMorningRoutine();
+  renderStatusCard();
+  speak('Your morning routine has been saved! ' + cleaned.length + ' steps.');
+}
+
+/* ─────────────────────────────────────────────
+   MODE TOGGLE 2 (Settings page sync)
+───────────────────────────────────────────── */
+function toggleMode2() {
+  const chk2 = document.getElementById('modeChk2');
+  const chk1 = document.getElementById('modeChk');
+  if (chk1) chk1.checked = chk2.checked;
+  const s = getSettings();
+  s.mode = chk2.checked ? 'strict' : 'flexible';
+  saveSettings(s);
+  renderModeBar();
+  renderAllActivities();
+}
+
+/* ─────────────────────────────────────────────
+   THEME / TEXT SIZE / VOICE SPEED
+───────────────────────────────────────────── */
+const THEMES = {
+  romalite:{ '--accent':'#DCA54A','--accent-l':'#FBF0D9','--accent-d':'#B8862E' },
+  purple:  { '--accent':'#7C3AED','--accent-l':'#EDE9FE','--accent-d':'#5B21B6' },
+  blue:    { '--accent':'#1D4ED8','--accent-l':'#EFF6FF','--accent-d':'#1E40AF' },
+  green:   { '--accent':'#059669','--accent-l':'#D1FAE5','--accent-d':'#047857' },
+  pink:    { '--accent':'#DB2777','--accent-l':'#FDF2F8','--accent-d':'#BE185D' },
+  orange:  { '--accent':'#EA580C','--accent-l':'#FFF4ED','--accent-d':'#C2410C' },
+};
+
+function applyTheme(name) {
+  const t = THEMES[name] || THEMES.romalite;
+  Object.entries(t).forEach(([k,v]) => document.documentElement.style.setProperty(k,v));
+}
+
+function applyTextSize(size) {
+  document.body.classList.remove('text-large','text-xl');
+  if (size === 'large') document.body.classList.add('text-large');
+  if (size === 'xl') document.body.classList.add('text-xl');
+}
+
+function applyVoiceSpeed() {} // used via getSettings().voiceSpeed in speak()
+
+/* ─────────────────────────────────────────────
+   STATUS CARD
+───────────────────────────────────────────── */
+function renderStatusCard() {
+  const dk = todayKey();
+  const routine = loadRoutine(dk);
+  const doneRoutine = Object.values(routine).filter(Boolean).length;
+  const water = loadWater(dk);
+  const day = loadDay(dk);
+  const totalActs = (day.morning||[]).length + (day.afternoon||[]).length + (day.evening||[]).length;
+  const el = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+  el('st-routine', doneRoutine + '/' + getRoutineItems().length);
+  el('st-water', water + '/8');
+  el('st-acts', totalActs);
+}
+
+/* ─────────────────────────────────────────────
+   SETTINGS RENDER
+───────────────────────────────────────────── */
+function renderSettings() {
+  const s = getSettings();
+  document.getElementById('settingsNameDisplay').textContent = getUserName();
+
+  // Theme buttons
+  const themeRow = document.getElementById('themeButtonsRow');
+  if (themeRow) {
+    const themes = [
+      {id:'romalite',color:'#DCA54A',label:'Yellow'},
+      {id:'purple',  color:'#7C3AED',label:'Purple'},
+      {id:'blue',    color:'#1D4ED8',label:'Blue'},
+      {id:'green',   color:'#059669',label:'Green'},
+      {id:'pink',    color:'#DB2777',label:'Pink'},
+      {id:'orange',  color:'#EA580C',label:'Orange'},
+    ];
+    themeRow.innerHTML = '';
+    themes.forEach(t => {
+      const btn = document.createElement('button');
+      btn.className = 'settings-theme-btn' + (s.theme === t.id ? ' sel' : '');
+      btn.style.background = t.color;
+      btn.innerHTML = `<span style="font-size:18px;">●</span><span>${t.label}</span>`;
+      btn.addEventListener('click', () => {
+        const ns = getSettings(); ns.theme = t.id; saveSettings(ns);
+        applyTheme(t.id); renderSettings();
+        showToast('🎨', t.label + ' theme!');
+      });
+      themeRow.appendChild(btn);
+    });
+  }
+
+  // Text size buttons
+  const sizeRow = document.getElementById('textSizeRow');
+  if (sizeRow) {
+    sizeRow.innerHTML = '';
+    [{v:'normal',l:'Normal'},{v:'large',l:'Large'},{v:'xl',l:'Extra Large'}].forEach(opt => {
+      const btn = document.createElement('button');
+      btn.className = 'settings-opt-btn' + (s.textSize === opt.v ? ' sel' : '');
+      btn.textContent = opt.l;
+      btn.addEventListener('click', () => {
+        const ns = getSettings(); ns.textSize = opt.v; saveSettings(ns);
+        applyTextSize(opt.v); renderSettings();
+      });
+      sizeRow.appendChild(btn);
+    });
+  }
+
+  // Voice speed buttons
+  const speedRow = document.getElementById('voiceSpeedRow');
+  if (speedRow) {
+    speedRow.innerHTML = '';
+    [{v:'slow',l:'Slow'},{v:'medium',l:'Medium'},{v:'fast',l:'Fast'}].forEach(opt => {
+      const btn = document.createElement('button');
+      btn.className = 'settings-opt-btn' + (s.voiceSpeed === opt.v ? ' sel' : '');
+      btn.textContent = opt.l;
+      btn.addEventListener('click', () => {
+        const ns = getSettings(); ns.voiceSpeed = opt.v; saveSettings(ns);
+        renderSettings();
+        speak('Voice speed set to ' + opt.l);
+      });
+      speedRow.appendChild(btn);
+    });
+  }
+
+  // Mode toggle 2
+  const chk2 = document.getElementById('modeChk2');
+  if (chk2) {
+    chk2.checked = (s.mode === 'strict');
+    const l2 = document.getElementById('modeLbl2L');
+    const r2 = document.getElementById('modeLbl2R');
+    if (l2) l2.classList.toggle('on', s.mode !== 'strict');
+    if (r2) r2.classList.toggle('on', s.mode === 'strict');
+  }
+}
+
+function clearAllData() {
+  if (!confirm('Are you sure? This will delete ALL your activities, routines, water history, joy moments, and your name. This cannot be undone.')) return;
+  localStorage.clear();
+  location.reload();
+}
+
+/* ─────────────────────────────────────────────
+   CUSTOM ACTIVITY PICKER
+───────────────────────────────────────────── */
+function loadCustomActs() { return loadRaw('custom_activities', []); }
+function addCustomAct(label, emoji) {
+  const acts = loadCustomActs();
+  if (!acts.find(a => a.label.toLowerCase() === label.toLowerCase())) {
+    acts.unshift({ id:'cu_'+Date.now(), label, emoji: emoji||'✨', addedAt:Date.now() });
+    if (acts.length > 20) acts.pop();
+    saveRaw('custom_activities', acts);
+  }
+}
+
+function renderCustomActStep(body) {
+  body.innerHTML = '';
+  let selectedEmoji = '✨';
+
+  const topDiv = document.createElement('div');
+  topDiv.innerHTML = `
+    <label class="det-lbl">What would you like to do?</label>
+    <input type="text" id="customActInput" class="det-input" placeholder="Type your activity..."
+           style="font-size:20px;" autocomplete="off">
+    <label class="det-lbl" style="margin-top:4px;">Pick an emoji</label>
+  `;
+  body.appendChild(topDiv);
+
+  const emojiRow = document.createElement('div');
+  emojiRow.style.cssText = 'display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;';
+  ['✨','🎯','🏃','🌟','🎉','🎨','🎵','🤝','🚀','💡','🌈','🏠','❤️','⭐','🎭','😊'].forEach(e => {
+    const btn = document.createElement('button');
+    btn.style.cssText = 'font-size:28px;padding:6px;background:rgba(0,0,0,.04);border:3px solid transparent;border-radius:12px;cursor:pointer;min-width:48px;min-height:48px;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;transition:all .2s;';
+    btn.textContent = e;
+    if (e === selectedEmoji) btn.style.borderColor = 'var(--accent)';
+    btn.addEventListener('click', () => {
+      selectedEmoji = e;
+      emojiRow.querySelectorAll('button').forEach(b => { b.style.borderColor='transparent'; });
+      btn.style.borderColor = 'var(--accent)';
+    });
+    emojiRow.appendChild(btn);
+  });
+  body.appendChild(emojiRow);
+
+  // Previous custom activities
+  const saved = loadCustomActs();
+  if (saved.length > 0) {
+    const prevLbl = document.createElement('label');
+    prevLbl.className = 'det-lbl';
+    prevLbl.textContent = 'My Previous Activities';
+    body.appendChild(prevLbl);
+    saved.forEach(act => {
+      const btn = document.createElement('button');
+      btn.className = 'act-opt-btn';
+      btn.innerHTML = `<span style="font-size:26px;">${act.emoji}</span><span>${act.label}</span>`;
+      btn.addEventListener('click', () => {
+        pickerState.selectedAct = act;
+        pickerState.step = 'details';
+        renderPickerStep();
+      });
+      body.appendChild(btn);
+    });
+  }
+
+  // Use this activity button
+  const useBtn = document.createElement('button');
+  useBtn.style.cssText = 'width:100%;min-height:66px;border:none;border-radius:16px;background:var(--accent);color:#fff;font-size:20px;font-weight:800;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;display:flex;align-items:center;justify-content:center;gap:10px;margin-top:12px;';
+  useBtn.innerHTML = '✓ Use This Activity';
+  useBtn.addEventListener('click', () => {
+    const input = document.getElementById('customActInput');
+    const label = (input ? input.value : '').trim();
+    if (!label) { speak('Please type what you would like to do!'); if (input) input.focus(); return; }
+    pickerState.selectedAct = { id:'cu_'+Date.now(), label, emoji: selectedEmoji };
+    addCustomAct(label, selectedEmoji);
+    pickerState.step = 'details';
+    renderPickerStep();
+  });
+  body.appendChild(useBtn);
+}
+
+/* ─────────────────────────────────────────────
+   INIT
+───────────────────────────────────────────── */
+function init() {
+  // Apply saved settings
+  const s = getSettings();
+  applyTheme(s.theme || 'romalite');
+  applyTextSize(s.textSize || 'normal');
+
+  // Welcome screen
+  if (!localStorage.getItem('plannerUserName')) {
+    document.getElementById('welcomeScreen').classList.add('show');
+  }
+
+  renderModeBar();
+  renderHeader();
+  renderMorningRoutine();
+  renderWater();
+  renderAllActivities();
+  renderStatusCard();
+  renderAffirmDots();
+  showAffirm(affIdx);
+  resetAffTimer();
+  renderJoyEmojis();
+  renderJoyEntries();
+  setInterval(renderHeader, 60000);
+  setInterval(renderStatusCard, 30000);
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

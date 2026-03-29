@@ -1,0 +1,20 @@
+{
+  "name": "My Daily Planner — Romalite Life",
+  "short_name": "My Planner",
+  "description": "A personalized daily planner with Text-to-Speech, activity tracking, joy log, and more.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#DCA54A",
+  "theme_color": "#DCA54A",
+  "orientation": "portrait-primary",
+  "categories": ["productivity", "lifestyle", "health"],
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23DCA54A'/><text y='72' x='50' text-anchor='middle' font-size='60'>🌟</text></svg>",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
